@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { API_BASE_URL, meterApi } from '../services/api';
+import { meterApi, normalizeServerAssetUrl, type UploadableImage } from '../services/api';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { Colors, Spacing, BorderRadius, Typography, Shadows } from '../constants/theme';
@@ -32,14 +32,15 @@ interface ClientInfo {
   address?: string;
 }
 
+type ReadingMode = 'new' | 'edit' | 'locked';
+
 const MeterReadingScreen = () => {
-  const baseUrl = API_BASE_URL.replace(/\/api$/, '');
   const router = useRouter();
   const [searchId, setSearchId] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [clientInfo, setClientInfo] = useState<ClientInfo | null>(null);
   const [currentIndex, setCurrentIndex] = useState('');
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<UploadableImage | null>(null);
   const [isInaccessible, setIsInaccessible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -53,20 +54,9 @@ const MeterReadingScreen = () => {
   const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [editableReadingId, setEditableReadingId] = useState<number | null>(null);
   const [existingPhotoUri, setExistingPhotoUri] = useState<string | null>(null);
-
-  const hasApprovedReadingThisMonth = (readings: any[]): boolean => {
-    if (!readings?.length) return false;
-    const now = new Date();
-    return readings.some((r: any) => {
-      const d = new Date(r?.readingDate || r?.createdAt || 0);
-      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && String(r?.status || '').toLowerCase() === 'approved';
-    });
-  };
-
-  const hasPendingReading = (readings: any[]): boolean => {
-    if (!readings?.length) return false;
-    return readings.some((r: any) => ['pending', 're_submitted'].includes(String(r?.status || '').toLowerCase()));
-  };
+  const [activeReading, setActiveReading] = useState<any | null>(null);
+  const [readingMode, setReadingMode] = useState<ReadingMode>('new');
+  const [photoLoadFailed, setPhotoLoadFailed] = useState(false);
 
   const extractReadingId = (reading: any): number | null => {
     const rawId = reading?.meterReadingId || reading?.readingId || reading?.id;
@@ -83,12 +73,33 @@ const MeterReadingScreen = () => {
 
   const getLatestReading = (readings: any[]) => getSortedReadings(readings)[0] || null;
 
+  const isReadingInCurrentMonth = (reading: any) => {
+    const date = new Date(reading?.readingDate || reading?.createdAt || 0);
+    const now = new Date();
+    return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
+  };
+
+  const getReadingValue = (reading: any): number | null => {
+    const raw = reading?.currentIndex ?? reading?.readingValue;
+    if (raw === null || raw === undefined || raw === '') return null;
+    const value = Number(raw);
+    return Number.isNaN(value) ? null : value;
+  };
+
+  const getReadingPreviousIndex = (reading: any): number | null => {
+    const raw = reading?.previousIndex;
+    if (raw === null || raw === undefined || raw === '') return null;
+    const value = Number(raw);
+    return Number.isNaN(value) ? null : value;
+  };
+
   const resolveReadingState = (readings: any[]) => {
     if (!readings.length) {
       return {
         isBlocked: false,
         blockedReason: null as string | null,
         editableReadingId: null as number | null,
+        mode: 'new' as ReadingMode,
       };
     }
 
@@ -102,16 +113,18 @@ const MeterReadingScreen = () => {
         blockedReason:
           latestStatus === 'rejected'
             ? 'Dernier relevé rejeté - Corrigez-le puis renvoyez-le'
-            : "Un relevé existe déjà pour ce client - vous pouvez le modifier",
+            : "Relevé du mois déjà enregistré - modifiez-le si nécessaire",
         editableReadingId: latestReadingId,
+        mode: 'edit' as ReadingMode,
       };
     }
 
-    if (hasApprovedReadingThisMonth(readings)) {
+    if (latestStatus === 'approved' && isReadingInCurrentMonth(latest)) {
       return {
         isBlocked: true,
         blockedReason: 'Relevé déjà approuvé pour ce mois',
         editableReadingId: null as number | null,
+        mode: 'locked' as ReadingMode,
       };
     }
 
@@ -119,14 +132,16 @@ const MeterReadingScreen = () => {
       isBlocked: false,
       blockedReason: null as string | null,
       editableReadingId: null as number | null,
+      mode: 'new' as ReadingMode,
     };
   };
 
-  const applyEditableReadingToForm = (reading: any, previousIndex: number) => {
+  const applyReadingToForm = (reading: any, fallbackPreviousIndex: number) => {
     if (!reading) {
       setIsInaccessible(false);
       setSelectedImage(null);
       setExistingPhotoUri(null);
+      setPhotoLoadFailed(false);
       return;
     }
 
@@ -144,31 +159,73 @@ const MeterReadingScreen = () => {
         }
       } catch {}
     }
-    const normalizedPhotoUrl = photoUrl
-      ? photoUrl.startsWith('http')
-        ? photoUrl
-        : `${baseUrl}${photoUrl.startsWith('/') ? '' : '/'}${photoUrl}`
-      : null;
+    const normalizedPhotoUrl = normalizeServerAssetUrl(photoUrl);
 
     setIsInaccessible(inaccessible);
     setExistingPhotoUri(normalizedPhotoUrl);
     setSelectedImage(null);
+    setPhotoLoadFailed(false);
 
     if (inaccessible) {
       setCurrentIndex('');
       return;
     }
 
-    const rawReadingValue = reading?.currentIndex ?? reading?.readingValue;
-    const readingValue = Number(rawReadingValue);
-    if (rawReadingValue !== null && rawReadingValue !== undefined && !Number.isNaN(readingValue)) {
+    const readingValue = getReadingValue(reading);
+    if (readingValue !== null) {
       setCurrentIndex(String(readingValue));
-    } else if (previousIndex > 0) {
-      setCurrentIndex(String(previousIndex));
+    } else if (fallbackPreviousIndex > 0) {
+      setCurrentIndex(String(fallbackPreviousIndex));
     }
   };
 
+  const syncFormWithState = (reading: any, state: ReturnType<typeof resolveReadingState>, info: ClientInfo) => {
+    const derivedPreviousIndex = getReadingPreviousIndex(reading);
+    const nextPreviousIndex =
+      state.mode === 'edit' && derivedPreviousIndex !== null ? derivedPreviousIndex : info.previousIndex;
+
+    setClientInfo({ ...info, previousIndex: nextPreviousIndex });
+    setReadingMode(state.mode);
+    setActiveReading(reading);
+
+    if (state.mode === 'new') {
+      setCurrentIndex(nextPreviousIndex > 0 ? String(nextPreviousIndex) : '');
+      setIsInaccessible(false);
+      setSelectedImage(null);
+      setExistingPhotoUri(null);
+      setPhotoLoadFailed(false);
+      return;
+    }
+
+    applyReadingToForm(reading, nextPreviousIndex);
+  };
+
   const canTakeReading = statusValidated && !isBlocked;
+
+  const statusTone =
+    readingMode === 'locked' ? 'error' : blockedReason ? 'warning' : 'success';
+  const statusText =
+    statusCheckLoading
+      ? 'Vérification en cours...'
+      : blockedReason ||
+        (readingMode === 'edit'
+          ? 'Vous modifiez le relevé de ce mois'
+          : 'Prêt pour un nouveau relevé');
+  const statusIcon =
+    statusCheckLoading ? '⏳' : readingMode === 'locked' ? '🔒' : readingMode === 'edit' ? '✏️' : '✓';
+  const displayedPhotoUri = !photoLoadFailed ? selectedImage?.uri || existingPhotoUri : selectedImage?.uri || null;
+  const statIndexValue =
+    readingMode === 'new'
+      ? clientInfo?.previousIndex ?? 0
+      : getReadingValue(activeReading) ?? clientInfo?.previousIndex ?? 0;
+  const statIndexLabel = readingMode === 'new' ? 'Index préc.' : 'Index relevé';
+  const photoHelperText =
+    isInaccessible
+      ? 'Photo optionnelle si le compteur est inaccessible.'
+      : readingMode === 'edit'
+        ? 'La photo existante est conservée. Remplacez-la seulement si nécessaire.'
+        : 'Ajoutez une photo nette du compteur.';
+  const submitLabel = readingMode === 'edit' ? 'Mettre à jour' : 'Enregistrer';
 
   const getDeviceLocation = async () => {
     setIsGettingLocation(true);
@@ -218,12 +275,14 @@ const MeterReadingScreen = () => {
           address: customer.address ? `${customer.address.streetName || ''} ${customer.address.streetNumber || ''}, ${customer.address.city?.cityName || ''}` : 'N/A',
         };
         setClientInfo(info);
-        setCurrentIndex(info.previousIndex > 0 ? String(info.previousIndex) : '');
         setEditableReadingId(null);
         setSubmitError(null);
         setSelectedImage(null);
         setExistingPhotoUri(null);
         setIsInaccessible(false);
+        setActiveReading(null);
+        setReadingMode('new');
+        setPhotoLoadFailed(false);
 
         setStatusCheckLoading(true);
         try {
@@ -236,15 +295,15 @@ const MeterReadingScreen = () => {
           setBlockedReason(state.blockedReason);
           setEditableReadingId(state.editableReadingId);
           setStatusValidated(true);
-
-          if (state.editableReadingId) {
-            applyEditableReadingToForm(latestReading, info.previousIndex);
-          }
+          syncFormWithState(latestReading, state, info);
         } catch {
           setIsBlocked(false);
           setBlockedReason(null);
           setEditableReadingId(null);
           setStatusValidated(false);
+          setReadingMode('new');
+          setActiveReading(null);
+          setCurrentIndex(info.previousIndex > 0 ? String(info.previousIndex) : '');
         } finally {
           setStatusCheckLoading(false);
         }
@@ -261,7 +320,15 @@ const MeterReadingScreen = () => {
   const handleChoosePhoto = async () => {
     if (Platform.OS === 'web') {
       const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, aspect: [4, 3], quality: 0.8 });
-      if (!result.canceled && result.assets[0]) setSelectedImage(result.assets[0].uri);
+      if (!result.canceled && result.assets[0]) {
+        const asset = result.assets[0];
+        setSelectedImage({
+          uri: asset.uri,
+          fileName: asset.fileName,
+          mimeType: asset.mimeType,
+        });
+        setPhotoLoadFailed(false);
+      }
       return;
     }
 
@@ -270,7 +337,13 @@ const MeterReadingScreen = () => {
       try {
         const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], allowsEditing: true, aspect: [4, 3], quality: 0.8 });
         if (!result.canceled && result.assets[0]) {
-          setSelectedImage(result.assets[0].uri);
+          const asset = result.assets[0];
+          setSelectedImage({
+            uri: asset.uri,
+            fileName: asset.fileName,
+            mimeType: asset.mimeType,
+          });
+          setPhotoLoadFailed(false);
           return;
         }
       } catch {}
@@ -279,7 +352,15 @@ const MeterReadingScreen = () => {
     const libraryPermission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (libraryPermission.status === 'granted') {
       const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, aspect: [4, 3], quality: 0.8 });
-      if (!result.canceled && result.assets[0]) setSelectedImage(result.assets[0].uri);
+      if (!result.canceled && result.assets[0]) {
+        const asset = result.assets[0];
+        setSelectedImage({
+          uri: asset.uri,
+          fileName: asset.fileName,
+          mimeType: asset.mimeType,
+        });
+        setPhotoLoadFailed(false);
+      }
     }
   };
 
@@ -295,8 +376,10 @@ const MeterReadingScreen = () => {
       const state = resolveReadingState(items);
       const readingIdToUpdate = state.editableReadingId ?? editableReadingId;
       const hasPhotoForSubmission =
-        !!selectedImage || (!!readingIdToUpdate && !!existingPhotoUri);
+        !!selectedImage?.uri || (!!readingIdToUpdate && !!existingPhotoUri);
 
+      setReadingMode(state.mode);
+      setActiveReading(getLatestReading(items));
       setEditableReadingId(readingIdToUpdate);
       if (state.isBlocked) throw new Error(state.blockedReason || "Impossible d'enregistrer le relevé.");
       if (!isInaccessible && !hasPhotoForSubmission) {
@@ -332,7 +415,7 @@ const MeterReadingScreen = () => {
         currentIndex: isInaccessible ? undefined : parsedIndex,
         previousIndex: clientInfo!.previousIndex,
         isInaccessible,
-        imageUri: selectedImage || undefined,
+        image: selectedImage || undefined,
         longitude: deviceLocation?.longitude || clientInfo!.longitude,
         latitude: deviceLocation?.latitude || clientInfo!.latitude,
       };
@@ -346,7 +429,7 @@ const MeterReadingScreen = () => {
           currentIndex: payload.currentIndex,
           previousIndex: payload.previousIndex,
           isInaccessible: payload.isInaccessible,
-          imageUri: payload.imageUri,
+          image: payload.image,
           longitude: payload.longitude,
           latitude: payload.latitude,
         });
@@ -366,11 +449,13 @@ const MeterReadingScreen = () => {
           onPress: () => {
             setCurrentIndex('');
             setSelectedImage(null);
+            setExistingPhotoUri(selectedImage?.uri || existingPhotoUri);
             setIsInaccessible(false);
             setUploadProgress('');
             setIsBlocked(true);
-            setBlockedReason("Relevé en attente d'approbation");
+            setBlockedReason('Relevé du mois enregistré et en attente de validation');
             setEditableReadingId(readingIdToUpdate ?? null);
+            setReadingMode('edit');
           },
         }]);
       }, 1000);
@@ -387,12 +472,18 @@ const MeterReadingScreen = () => {
   };
 
   const handleReset = () => {
-    setCurrentIndex('');
-    setSelectedImage(null);
-    setIsInaccessible(false);
-  };
+    setSubmitError(null);
+    if (readingMode !== 'new' && activeReading) {
+      applyReadingToForm(activeReading, clientInfo?.previousIndex || 0);
+      return;
+    }
 
-  const displayedPhotoUri = selectedImage || existingPhotoUri;
+    setCurrentIndex(clientInfo?.previousIndex ? String(clientInfo.previousIndex) : '');
+    setSelectedImage(null);
+    setExistingPhotoUri(null);
+    setIsInaccessible(false);
+    setPhotoLoadFailed(false);
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
@@ -464,22 +555,21 @@ const MeterReadingScreen = () => {
                     <Text style={styles.clientId}>ID: {clientInfo.customerId}</Text>
                   </View>
                 </View>
-
-                {statusCheckLoading ? (
-                  <Badge text="Vérification…" variant="warning" />
-                ) : isBlocked ? (
-                  <Badge text={blockedReason || ''} variant="error" />
-                ) : blockedReason ? (
-                  <Badge text={blockedReason} variant="warning" />
-                ) : (
-                  <Badge text="Prêt pour relevé" variant="success" icon="✓" />
-                )}
+                <View style={[
+                  styles.statusBanner,
+                  statusTone === 'error' && styles.statusBannerError,
+                  statusTone === 'warning' && styles.statusBannerWarning,
+                  statusTone === 'success' && styles.statusBannerSuccess,
+                ]}>
+                  <Text style={styles.statusBannerIcon}>{statusIcon}</Text>
+                  <Text style={styles.statusBannerText}>{statusText}</Text>
+                </View>
               </View>
 
               {/* Stats Grid */}
               <View style={styles.statsGrid}>
                 <StatCard icon="📊" value={clientInfo.meterNumber} label="Compteur" />
-                <StatCard icon="📈" value={clientInfo.previousIndex} label="Index Préc." />
+                <StatCard icon="📈" value={statIndexValue} label={statIndexLabel} />
               </View>
               <View style={styles.statsGrid}>
                 <StatCard icon="📍" value={clientInfo.zoneCode} label="Zone" />
@@ -524,9 +614,19 @@ const MeterReadingScreen = () => {
                 />
 
                 <Text style={styles.inputLabel}>Photo du Compteur</Text>
+                <Text style={styles.inputHelper}>{photoHelperText}</Text>
                 {displayedPhotoUri ? (
                   <View style={styles.photoPreview}>
-                    <Image source={{ uri: displayedPhotoUri }} style={styles.previewImage} resizeMode="cover" />
+                    <Image
+                      source={{ uri: displayedPhotoUri }}
+                      style={styles.previewImage}
+                      resizeMode="cover"
+                      onError={() => {
+                        if (!selectedImage) {
+                          setPhotoLoadFailed(true);
+                        }
+                      }}
+                    />
                     <TouchableOpacity
                       style={styles.removePhotoButton}
                       onPress={() => (selectedImage ? setSelectedImage(null) : handleChoosePhoto())}
@@ -535,6 +635,23 @@ const MeterReadingScreen = () => {
                       <Text style={styles.removePhotoText}>
                         {selectedImage ? '✕ Supprimer' : '📷 Remplacer'}
                       </Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : existingPhotoUri && photoLoadFailed ? (
+                  <View style={styles.photoFallbackCard}>
+                    <Text style={styles.photoFallbackIcon}>🖼️</Text>
+                    <View style={styles.photoFallbackContent}>
+                      <Text style={styles.photoFallbackTitle}>Photo existante indisponible</Text>
+                      <Text style={styles.photoFallbackText}>
+                        L&apos;ancienne image ne peut pas etre affichee depuis le serveur. Vous pouvez la remplacer.
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      style={styles.photoReplaceButton}
+                      onPress={handleChoosePhoto}
+                      disabled={!canTakeReading || statusCheckLoading}
+                    >
+                      <Text style={styles.photoReplaceButtonText}>Remplacer</Text>
                     </TouchableOpacity>
                   </View>
                 ) : (
@@ -554,10 +671,20 @@ const MeterReadingScreen = () => {
                   style={styles.checkboxRow}
                   onPress={() => {
                     if (isBlocked || statusCheckLoading) return;
-                    setIsInaccessible(!isInaccessible);
-                    if (!isInaccessible) {
+                    const nextValue = !isInaccessible;
+                    setIsInaccessible(nextValue);
+                    setSubmitError(null);
+
+                    if (nextValue) {
                       setCurrentIndex('');
                       setSelectedImage(null);
+                    } else {
+                      const restoredValue = getReadingValue(activeReading);
+                      if (restoredValue !== null) {
+                        setCurrentIndex(String(restoredValue));
+                      } else if (clientInfo?.previousIndex) {
+                        setCurrentIndex(String(clientInfo.previousIndex));
+                      }
                     }
                   }}
                   disabled={isBlocked || statusCheckLoading}
@@ -584,7 +711,7 @@ const MeterReadingScreen = () => {
                     disabled={!canTakeReading || statusCheckLoading}
                     activeOpacity={0.7}
                   >
-                    <Text style={styles.resetButtonText}>Réinitialiser</Text>
+                      <Text style={styles.resetButtonText}>Réinitialiser</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
@@ -600,7 +727,7 @@ const MeterReadingScreen = () => {
                       </View>
                     ) : (
                       <View style={styles.submitButtonContent}>
-                        <Text style={styles.submitButtonText}>Enregistrer</Text>
+                        <Text style={styles.submitButtonText}>{submitLabel}</Text>
                         <Text style={styles.submitButtonIcon}>→</Text>
                       </View>
                     )}
@@ -681,12 +808,13 @@ const styles = StyleSheet.create({
     fontSize: Typography.fontSize.md,
   },
   clientCard: {
-    backgroundColor: Colors.neutral[50],
+    backgroundColor: Colors.background.primary,
     borderRadius: BorderRadius.xl,
     padding: Spacing.lg,
     borderWidth: 1,
     borderColor: Colors.border.default,
     marginBottom: Spacing.lg,
+    ...Shadows.md,
   },
   clientHeader: {
     flexDirection: 'row',
@@ -708,6 +836,36 @@ const styles = StyleSheet.create({
     color: Colors.text.tertiary,
     fontWeight: '500',
   },
+  statusBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    borderRadius: BorderRadius.lg,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md,
+    borderWidth: 1,
+  },
+  statusBannerSuccess: {
+    backgroundColor: Colors.success.light,
+    borderColor: '#A7F3D0',
+  },
+  statusBannerWarning: {
+    backgroundColor: Colors.warning.light,
+    borderColor: '#FCD34D',
+  },
+  statusBannerError: {
+    backgroundColor: Colors.error.light,
+    borderColor: '#FCA5A5',
+  },
+  statusBannerIcon: {
+    fontSize: 16,
+  },
+  statusBannerText: {
+    flex: 1,
+    color: Colors.text.primary,
+    fontSize: Typography.fontSize.sm,
+    fontWeight: '600',
+  },
   statsGrid: {
     flexDirection: 'row',
     gap: Spacing.md,
@@ -716,11 +874,12 @@ const styles = StyleSheet.create({
   gpsCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.neutral[50],
+    backgroundColor: Colors.background.primary,
     borderRadius: BorderRadius.xl,
     padding: Spacing.lg,
     borderWidth: 1,
     borderColor: Colors.border.default,
+    ...Shadows.sm,
   },
   gpsIcon: {
     fontSize: 24,
@@ -767,11 +926,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   inputCard: {
-    backgroundColor: Colors.neutral[50],
+    backgroundColor: Colors.background.primary,
     borderRadius: BorderRadius.xl,
     padding: Spacing.xl,
     borderWidth: 1,
     borderColor: Colors.border.default,
+    ...Shadows.md,
   },
   inputLabel: {
     fontSize: Typography.fontSize.md,
@@ -779,8 +939,15 @@ const styles = StyleSheet.create({
     color: Colors.text.primary,
     marginBottom: Spacing.sm,
   },
+  inputHelper: {
+    marginTop: -Spacing.xs,
+    marginBottom: Spacing.lg,
+    color: Colors.text.tertiary,
+    fontSize: Typography.fontSize.sm,
+    lineHeight: 18,
+  },
   input: {
-    backgroundColor: Colors.background.primary,
+    backgroundColor: Colors.neutral[50],
     borderWidth: 1,
     borderColor: Colors.border.default,
     borderRadius: BorderRadius.lg,
@@ -826,17 +993,56 @@ const styles = StyleSheet.create({
   },
   removePhotoButton: {
     alignSelf: 'flex-start',
-    backgroundColor: Colors.error.light,
+    backgroundColor: Colors.primary[50],
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.sm,
     borderWidth: 1,
-    borderColor: Colors.error.main,
+    borderColor: Colors.primary[200],
   },
   removePhotoText: {
-    color: Colors.error.dark,
+    color: Colors.primary[700],
     fontSize: Typography.fontSize.sm,
     fontWeight: '600',
+  },
+  photoFallbackCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+    backgroundColor: Colors.neutral[50],
+    borderWidth: 1,
+    borderColor: Colors.border.default,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    marginBottom: Spacing.xl,
+  },
+  photoFallbackIcon: {
+    fontSize: 22,
+  },
+  photoFallbackContent: {
+    flex: 1,
+    gap: Spacing.xs,
+  },
+  photoFallbackTitle: {
+    color: Colors.text.primary,
+    fontSize: Typography.fontSize.sm,
+    fontWeight: '700',
+  },
+  photoFallbackText: {
+    color: Colors.text.tertiary,
+    fontSize: Typography.fontSize.sm,
+    lineHeight: 18,
+  },
+  photoReplaceButton: {
+    backgroundColor: Colors.primary[500],
+    borderRadius: BorderRadius.md,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+  },
+  photoReplaceButtonText: {
+    color: Colors.text.inverse,
+    fontSize: Typography.fontSize.sm,
+    fontWeight: '700',
   },
   checkboxRow: {
     flexDirection: 'row',

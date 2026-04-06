@@ -16,11 +16,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { API_BASE_URL, meterApi } from '../services/api';
+import { meterApi, normalizeServerAssetUrl } from '../services/api';
 import { Colors, Spacing, BorderRadius, Typography, Shadows } from '../constants/theme';
 import { Header, Avatar, Badge, StatCard, EmptyState } from '../components/ui';
 
-const BASE_URL = API_BASE_URL.replace(/\/api$/, '');
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function ReadingDetailsPage() {
@@ -86,11 +85,13 @@ export default function ReadingDetailsPage() {
   let photos: string[] = [];
   try {
     if (reading?.evidencePhotoUrl) {
-      const photoUrl = reading.evidencePhotoUrl;
-      photos = [photoUrl.startsWith('http') ? photoUrl : `${BASE_URL}${photoUrl.startsWith('/') ? '' : '/'}${photoUrl}`];
+      const normalizedUrl = normalizeServerAssetUrl(reading.evidencePhotoUrl);
+      photos = normalizedUrl ? [normalizedUrl] : [];
     } else if (reading?.photoUrls) {
       const parsed = JSON.parse(reading.photoUrls) || [];
-      photos = parsed.map((url: string) => url.startsWith('http') ? url : `${BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`);
+      photos = parsed
+        .map((url: string) => normalizeServerAssetUrl(url))
+        .filter(Boolean) as string[];
     }
   } catch { photos = []; }
   

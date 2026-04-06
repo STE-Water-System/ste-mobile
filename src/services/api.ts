@@ -3,6 +3,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_BASE_URL || 'http://187.124.172.217/api';
 
+export interface UploadableImage {
+  uri: string;
+  fileName?: string | null;
+  mimeType?: string | null;
+}
+
 // Storage keys
 export const STORAGE_KEYS = {
   TOKEN: 'auth_token',
@@ -80,14 +86,40 @@ const parseResponseBody = async (response: Response) => {
   }
 };
 
-const buildMultipartFile = (imageUri: string, filenamePrefix: string) => {
-  const fileExtension = imageUri.split('.').pop()?.toLowerCase() || 'jpg';
-  const mimeType = fileExtension === 'png' ? 'image/png' : 'image/jpeg';
+export const normalizeServerAssetUrl = (assetUrl?: string | null) => {
+  if (!assetUrl?.trim()) return null;
+
+  const baseUrl = API_BASE_URL.replace(/\/api$/, '');
+
+  try {
+    const parsed = new URL(assetUrl);
+    if (['localhost', '127.0.0.1', '10.0.2.2'].includes(parsed.hostname)) {
+      return `${baseUrl}${parsed.pathname}${parsed.search}`;
+    }
+    return assetUrl;
+  } catch {
+    return assetUrl.startsWith('/') ? `${baseUrl}${assetUrl}` : `${baseUrl}/${assetUrl}`;
+  }
+};
+
+const buildMultipartFile = (image: UploadableImage, filenamePrefix: string) => {
+  const uri = image.uri;
+  const normalizedMimeType =
+    image.mimeType ||
+    (uri.split('.').pop()?.toLowerCase() === 'png' ? 'image/png' : 'image/jpeg');
+  const extensionFromMime = normalizedMimeType.split('/')[1]?.toLowerCase();
+  const extensionFromUri = uri.split('.').pop()?.toLowerCase();
+  const fileExtension =
+    extensionFromMime || extensionFromUri || 'jpg';
+  const fileName =
+    image.fileName && image.fileName.includes('.')
+      ? image.fileName
+      : `${filenamePrefix}-${Date.now()}.${fileExtension}`;
 
   return {
-    uri: imageUri,
-    name: `${filenamePrefix}-${Date.now()}.${fileExtension}`,
-    type: mimeType,
+    uri,
+    name: fileName,
+    type: normalizedMimeType,
   } as any;
 };
 
@@ -394,7 +426,7 @@ export const meterApi = {
     currentIndex?: number;
     previousIndex?: number;
     isInaccessible: boolean;
-    imageUri?: string;
+    image?: UploadableImage;
     notes?: string;
     longitude?: string;
     latitude?: string;
@@ -436,8 +468,8 @@ export const meterApi = {
     if (data.notes) form.append('comments', data.notes);
 
     // Evidence photo - React Native requires specific format
-    if (data.imageUri) {
-      form.append('evidencePhotoUrl', buildMultipartFile(data.imageUri, 'evidence'));
+    if (data.image) {
+      form.append('evidencePhotoUrl', buildMultipartFile(data.image, 'evidence'));
     }
 
     return await apiUpload(`/meter-readings/new`, form);
@@ -448,7 +480,7 @@ export const meterApi = {
     currentIndex?: number;
     previousIndex?: number;
     isInaccessible?: boolean;
-    imageUri?: string;
+    image?: UploadableImage;
     longitude?: string;
     latitude?: string;
   }) => {
@@ -483,8 +515,8 @@ export const meterApi = {
     if (data.longitude) form.append('longitude', data.longitude);
     if (data.latitude) form.append('latitude', data.latitude);
 
-    if (data.imageUri) {
-      form.append('evidencePhotoUrl', buildMultipartFile(data.imageUri, 'meter-reading'));
+    if (data.image) {
+      form.append('evidencePhotoUrl', buildMultipartFile(data.image, 'meter-reading'));
     }
 
     return await apiUpload(`/meter-readings/${data.meterReadingId}`, form, 'PUT');
