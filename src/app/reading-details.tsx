@@ -16,11 +16,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { meterApi } from '../services/api';
+import { API_BASE_URL, meterApi } from '../services/api';
 import { Colors, Spacing, BorderRadius, Typography, Shadows } from '../constants/theme';
 import { Header, Avatar, Badge, StatCard, EmptyState } from '../components/ui';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
 const BASE_URL = API_BASE_URL.replace(/\/api$/, '');
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 

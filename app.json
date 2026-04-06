@@ -20,7 +20,8 @@
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
-        }
+        },
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -38,6 +39,13 @@
     "plugins": [
       "expo-router",
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "cecdee4b-36d2-407b-adcf-0c006c11ccb5"
+      }
+    },
+    "owner": "mahamat-ali"
   }
 }

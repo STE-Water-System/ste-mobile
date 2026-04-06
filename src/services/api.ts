@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+export const API_BASE_URL =
+  process.env.EXPO_PUBLIC_API_BASE_URL || 'http://187.124.172.217/api';
 
 // Storage keys
 export const STORAGE_KEYS = {
@@ -58,6 +59,38 @@ export const getStoredUser = async () => {
   }
 };
 
+const getErrorMessage = (data: any, fallback: string) => {
+  if (typeof data === 'string' && data.trim()) return data;
+  if (data && typeof data === 'object') {
+    if (typeof data.message === 'string' && data.message.trim()) return data.message;
+    if (typeof data.error === 'string' && data.error.trim()) return data.error;
+  }
+
+  return fallback;
+};
+
+const parseResponseBody = async (response: Response) => {
+  const raw = await response.text();
+  if (!raw) return null;
+
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return raw;
+  }
+};
+
+const buildMultipartFile = (imageUri: string, filenamePrefix: string) => {
+  const fileExtension = imageUri.split('.').pop()?.toLowerCase() || 'jpg';
+  const mimeType = fileExtension === 'png' ? 'image/png' : 'image/jpeg';
+
+  return {
+    uri: imageUri,
+    name: `${filenamePrefix}-${Date.now()}.${fileExtension}`,
+    type: mimeType,
+  } as any;
+};
+
 // API request helper
 const apiRequest = async (
   endpoint: string,
@@ -79,10 +112,10 @@ const apiRequest = async (
     headers,
   });
 
-  const data = await response.json();
+  const data = await parseResponseBody(response);
 
   if (!response.ok) {
-    throw new Error(data.message || 'API request failed');
+    throw new Error(getErrorMessage(data, response.statusText || 'API request failed'));
   }
 
   return data;
@@ -91,7 +124,8 @@ const apiRequest = async (
 // API upload helper (multipart/form-data)
 const apiUpload = async (
   endpoint: string,
-  formData: FormData
+  formData: FormData,
+  method: 'POST' | 'PUT' = 'POST'
 ): Promise<any> => {
   const token = await getToken();
 
@@ -101,15 +135,15 @@ const apiUpload = async (
   }
 
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    method: 'POST',
+    method,
     headers,
     body: formData,
   });
 
-  const data = await response.json();
+  const data = await parseResponseBody(response);
 
   if (!response.ok) {
-    throw new Error(data.message || 'API request failed');
+    throw new Error(getErrorMessage(data, response.statusText || 'API request failed'));
   }
 
   return data;
@@ -403,19 +437,41 @@ export const meterApi = {
 
     // Evidence photo - React Native requires specific format
     if (data.imageUri) {
-      const filename = `evidence-${Date.now()}.jpg`;
-      const fileExtension = data.imageUri.split('.').pop()?.toLowerCase() || 'jpg';
-      const mimeType = fileExtension === 'png' ? 'image/png' : 'image/jpeg';
-
-      // React Native FormData expects this specific format
-      form.append('evidencePhotoUrl', {
-        uri: data.imageUri,
-        name: filename,
-        type: mimeType,
-      } as any);
+      form.append('evidencePhotoUrl', buildMultipartFile(data.imageUri, 'evidence'));
     }
 
     return await apiUpload(`/meter-readings/new`, form);
+  },
+
+  updateReading: async (data: {
+    meterReadingId: number;
+    currentIndex?: number;
+    previousIndex?: number;
+    isInaccessible?: boolean;
+    imageUri?: string;
+    longitude?: string;
+    latitude?: string;
+  }) => {
+    const form = new FormData();
+    const currentIndex =
+      data.isInaccessible && typeof data.previousIndex === 'number'
+        ? data.previousIndex
+        : data.currentIndex;
+
+    form.append('meterReadingId', String(data.meterReadingId));
+
+    if (typeof currentIndex === 'number' && !Number.isNaN(currentIndex)) {
+      form.append('currentIndex', String(currentIndex));
+    }
+
+    if (data.longitude) form.append('longitude', data.longitude);
+    if (data.latitude) form.append('latitude', data.latitude);
+
+    if (data.imageUri) {
+      form.append('image', buildMultipartFile(data.imageUri, 'meter-reading'));
+    }
+
+    return await apiUpload(`/meter-readings/${data.meterReadingId}`, form, 'PUT');
   },
 };
 

@@ -50,6 +50,7 @@ const MeterReadingScreen = () => {
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
   const [deviceLocation, setDeviceLocation] = useState<{ latitude: string; longitude: string } | null>(null);
   const [isGettingLocation, setIsGettingLocation] = useState(false);
+  const [editableReadingId, setEditableReadingId] = useState<number | null>(null);
 
   const hasApprovedReadingThisMonth = (readings: any[]): boolean => {
     if (!readings?.length) return false;
@@ -63,6 +64,63 @@ const MeterReadingScreen = () => {
   const hasPendingReading = (readings: any[]): boolean => {
     if (!readings?.length) return false;
     return readings.some((r: any) => ['pending', 're_submitted'].includes(String(r?.status || '').toLowerCase()));
+  };
+
+  const extractReadingId = (reading: any): number | null => {
+    const rawId = reading?.meterReadingId || reading?.readingId || reading?.id;
+    const id = Number(rawId);
+    return Number.isFinite(id) && id > 0 ? id : null;
+  };
+
+  const getSortedReadings = (readings: any[]) =>
+    [...readings].sort(
+      (a: any, b: any) =>
+        new Date(b?.readingDate || b?.createdAt || 0).getTime() -
+        new Date(a?.readingDate || a?.createdAt || 0).getTime()
+    );
+
+  const resolveReadingState = (readings: any[]) => {
+    if (!readings.length) {
+      return {
+        isBlocked: false,
+        blockedReason: null as string | null,
+        editableReadingId: null as number | null,
+      };
+    }
+
+    if (hasPendingReading(readings)) {
+      return {
+        isBlocked: true,
+        blockedReason: "Relevé en attente d'approbation",
+        editableReadingId: null as number | null,
+      };
+    }
+
+    if (hasApprovedReadingThisMonth(readings)) {
+      return {
+        isBlocked: true,
+        blockedReason: 'Relevé déjà approuvé pour ce mois',
+        editableReadingId: null as number | null,
+      };
+    }
+
+    const latest = getSortedReadings(readings)[0];
+    const latestStatus = String(latest?.status || '').toLowerCase();
+    const latestReadingId = extractReadingId(latest);
+
+    if (latestStatus === 'rejected' && latestReadingId) {
+      return {
+        isBlocked: false,
+        blockedReason: 'Dernier relevé rejeté - Corrigez-le puis renvoyez-le',
+        editableReadingId: latestReadingId,
+      };
+    }
+
+    return {
+      isBlocked: false,
+      blockedReason: null as string | null,
+      editableReadingId: null as number | null,
+    };
   };
 
   const canTakeReading = statusValidated && !isBlocked;
@@ -116,37 +174,23 @@ const MeterReadingScreen = () => {
         };
         setClientInfo(info);
         setCurrentIndex(info.previousIndex > 0 ? String(info.previousIndex) : '');
+        setEditableReadingId(null);
+        setSubmitError(null);
 
         setStatusCheckLoading(true);
         try {
           const readings = await meterApi.getReadings(info.meterId);
           const items = Array.isArray(readings?.data?.data) ? readings.data.data : Array.isArray(readings?.data) ? readings.data : [];
-          
-          if (!items.length) {
-            setIsBlocked(false);
-            setBlockedReason(null);
-            setStatusValidated(true);
-          } else if (hasPendingReading(items)) {
-            setIsBlocked(true);
-            setBlockedReason("Relevé en attente d'approbation");
-            setStatusValidated(true);
-          } else if (hasApprovedReadingThisMonth(items)) {
-            setIsBlocked(true);
-            setBlockedReason('Relevé déjà approuvé pour ce mois');
-            setStatusValidated(true);
-          } else {
-            setIsBlocked(false);
-            setStatusValidated(true);
-            const latest = [...items].sort((a: any, b: any) => new Date(b?.readingDate || b?.createdAt || 0).getTime() - new Date(a?.readingDate || a?.createdAt || 0).getTime())[0];
-            if (String(latest?.status || '').toLowerCase() === 'rejected') {
-              setBlockedReason('Dernier relevé rejeté - Vous pouvez soumettre un nouveau relevé');
-            } else {
-              setBlockedReason(null);
-            }
-          }
+          const state = resolveReadingState(items);
+
+          setIsBlocked(state.isBlocked);
+          setBlockedReason(state.blockedReason);
+          setEditableReadingId(state.editableReadingId);
+          setStatusValidated(true);
         } catch {
           setIsBlocked(false);
           setBlockedReason(null);
+          setEditableReadingId(null);
           setStatusValidated(false);
         } finally {
           setStatusCheckLoading(false);
@@ -196,8 +240,10 @@ const MeterReadingScreen = () => {
     try {
       const readings = await meterApi.getReadings(clientInfo.meterId);
       const items = Array.isArray(readings?.data?.data) ? readings.data.data : Array.isArray(readings?.data) ? readings.data : [];
-      if (hasPendingReading(items)) throw new Error("Un relevé est déjà en attente d'approbation.");
-      if (hasApprovedReadingThisMonth(items)) throw new Error('Un relevé a déjà été approuvé pour ce mois.');
+      const state = resolveReadingState(items);
+
+      setEditableReadingId(state.editableReadingId);
+      if (state.isBlocked) throw new Error(state.blockedReason || "Impossible d'enregistrer le relevé.");
 
       const parsedIndex = Number(currentIndex.replace(/,/g, '.').trim());
       if (!isInaccessible && Number.isNaN(parsedIndex)) throw new Error('Index invalide.');
@@ -222,8 +268,10 @@ const MeterReadingScreen = () => {
       setUploadProgress('Préparation des données...');
       await new Promise(r => setTimeout(r, 300));
 
+      const readingIdToUpdate = editableReadingId;
       const payload = {
         meterId: clientInfo!.meterId,
+        meterReadingId: readingIdToUpdate || undefined,
         currentIndex: isInaccessible ? undefined : parsedIndex,
         previousIndex: clientInfo!.previousIndex,
         isInaccessible,
@@ -234,8 +282,20 @@ const MeterReadingScreen = () => {
 
       setUploadProgress('Envoi de la photo...');
       await new Promise(r => setTimeout(r, 400));
-      setUploadProgress('Enregistrement du relevé...');
-      await meterApi.submitReading(payload);
+      setUploadProgress(readingIdToUpdate ? 'Mise à jour du relevé...' : 'Enregistrement du relevé...');
+      if (readingIdToUpdate) {
+        await meterApi.updateReading({
+          meterReadingId: readingIdToUpdate,
+          currentIndex: payload.currentIndex,
+          previousIndex: payload.previousIndex,
+          isInaccessible: payload.isInaccessible,
+          imageUri: payload.imageUri,
+          longitude: payload.longitude,
+          latitude: payload.latitude,
+        });
+      } else {
+        await meterApi.submitReading(payload);
+      }
       setUploadProgress('Finalisation...');
       await new Promise(r => setTimeout(r, 300));
       
@@ -244,7 +304,7 @@ const MeterReadingScreen = () => {
 
       setTimeout(() => {
         setShowSuccessAnimation(false);
-        Alert.alert('✅ Succès', 'Relevé enregistré avec succès.', [{
+        Alert.alert('✅ Succès', readingIdToUpdate ? 'Relevé mis à jour avec succès.' : 'Relevé enregistré avec succès.', [{
           text: 'OK',
           onPress: () => {
             setCurrentIndex('');
@@ -253,6 +313,7 @@ const MeterReadingScreen = () => {
             setUploadProgress('');
             setIsBlocked(true);
             setBlockedReason("Relevé en attente d'approbation");
+            setEditableReadingId(readingIdToUpdate);
           },
         }]);
       }, 1000);
