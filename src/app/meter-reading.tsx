@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { meterApi } from '../services/api';
+import { API_BASE_URL, meterApi } from '../services/api';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { Colors, Spacing, BorderRadius, Typography, Shadows } from '../constants/theme';
@@ -33,6 +33,7 @@ interface ClientInfo {
 }
 
 const MeterReadingScreen = () => {
+  const baseUrl = API_BASE_URL.replace(/\/api$/, '');
   const router = useRouter();
   const [searchId, setSearchId] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -51,6 +52,7 @@ const MeterReadingScreen = () => {
   const [deviceLocation, setDeviceLocation] = useState<{ latitude: string; longitude: string } | null>(null);
   const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [editableReadingId, setEditableReadingId] = useState<number | null>(null);
+  const [existingPhotoUri, setExistingPhotoUri] = useState<string | null>(null);
 
   const hasApprovedReadingThisMonth = (readings: any[]): boolean => {
     if (!readings?.length) return false;
@@ -79,6 +81,8 @@ const MeterReadingScreen = () => {
         new Date(a?.readingDate || a?.createdAt || 0).getTime()
     );
 
+  const getLatestReading = (readings: any[]) => getSortedReadings(readings)[0] || null;
+
   const resolveReadingState = (readings: any[]) => {
     if (!readings.length) {
       return {
@@ -88,11 +92,18 @@ const MeterReadingScreen = () => {
       };
     }
 
-    if (hasPendingReading(readings)) {
+    const latest = getLatestReading(readings);
+    const latestStatus = String(latest?.status || '').toLowerCase();
+    const latestReadingId = extractReadingId(latest);
+
+    if (['pending', 're_submitted', 'rejected'].includes(latestStatus) && latestReadingId) {
       return {
-        isBlocked: true,
-        blockedReason: "Relevé en attente d'approbation",
-        editableReadingId: null as number | null,
+        isBlocked: false,
+        blockedReason:
+          latestStatus === 'rejected'
+            ? 'Dernier relevé rejeté - Corrigez-le puis renvoyez-le'
+            : "Un relevé existe déjà pour ce client - vous pouvez le modifier",
+        editableReadingId: latestReadingId,
       };
     }
 
@@ -104,23 +115,57 @@ const MeterReadingScreen = () => {
       };
     }
 
-    const latest = getSortedReadings(readings)[0];
-    const latestStatus = String(latest?.status || '').toLowerCase();
-    const latestReadingId = extractReadingId(latest);
-
-    if (latestStatus === 'rejected' && latestReadingId) {
-      return {
-        isBlocked: false,
-        blockedReason: 'Dernier relevé rejeté - Corrigez-le puis renvoyez-le',
-        editableReadingId: latestReadingId,
-      };
-    }
-
     return {
       isBlocked: false,
       blockedReason: null as string | null,
       editableReadingId: null as number | null,
     };
+  };
+
+  const applyEditableReadingToForm = (reading: any, previousIndex: number) => {
+    if (!reading) {
+      setIsInaccessible(false);
+      setSelectedImage(null);
+      setExistingPhotoUri(null);
+      return;
+    }
+
+    const accessReason = String(reading?.accessReason || '').toLowerCase();
+    const inaccessible = accessReason === 'door_closed';
+    let photoUrl =
+      typeof reading?.evidencePhotoUrl === 'string' && reading.evidencePhotoUrl
+        ? reading.evidencePhotoUrl
+        : null;
+    if (!photoUrl && typeof reading?.photoUrls === 'string') {
+      try {
+        const parsed = JSON.parse(reading.photoUrls);
+        if (Array.isArray(parsed) && typeof parsed[0] === 'string' && parsed[0]) {
+          photoUrl = parsed[0];
+        }
+      } catch {}
+    }
+    const normalizedPhotoUrl = photoUrl
+      ? photoUrl.startsWith('http')
+        ? photoUrl
+        : `${baseUrl}${photoUrl.startsWith('/') ? '' : '/'}${photoUrl}`
+      : null;
+
+    setIsInaccessible(inaccessible);
+    setExistingPhotoUri(normalizedPhotoUrl);
+    setSelectedImage(null);
+
+    if (inaccessible) {
+      setCurrentIndex('');
+      return;
+    }
+
+    const rawReadingValue = reading?.currentIndex ?? reading?.readingValue;
+    const readingValue = Number(rawReadingValue);
+    if (rawReadingValue !== null && rawReadingValue !== undefined && !Number.isNaN(readingValue)) {
+      setCurrentIndex(String(readingValue));
+    } else if (previousIndex > 0) {
+      setCurrentIndex(String(previousIndex));
+    }
   };
 
   const canTakeReading = statusValidated && !isBlocked;
@@ -176,17 +221,25 @@ const MeterReadingScreen = () => {
         setCurrentIndex(info.previousIndex > 0 ? String(info.previousIndex) : '');
         setEditableReadingId(null);
         setSubmitError(null);
+        setSelectedImage(null);
+        setExistingPhotoUri(null);
+        setIsInaccessible(false);
 
         setStatusCheckLoading(true);
         try {
           const readings = await meterApi.getReadings(info.meterId);
           const items = Array.isArray(readings?.data?.data) ? readings.data.data : Array.isArray(readings?.data) ? readings.data : [];
           const state = resolveReadingState(items);
+          const latestReading = getLatestReading(items);
 
           setIsBlocked(state.isBlocked);
           setBlockedReason(state.blockedReason);
           setEditableReadingId(state.editableReadingId);
           setStatusValidated(true);
+
+          if (state.editableReadingId) {
+            applyEditableReadingToForm(latestReading, info.previousIndex);
+          }
         } catch {
           setIsBlocked(false);
           setBlockedReason(null);
@@ -233,7 +286,6 @@ const MeterReadingScreen = () => {
   const handleSubmit = async () => {
     if (!clientInfo) return Alert.alert('Erreur', 'Aucun client sélectionné.');
     if (!isInaccessible && !currentIndex.trim()) return Alert.alert('Erreur', 'Veuillez entrer l\'index actuel.');
-    if (!isInaccessible && !selectedImage) return Alert.alert('Erreur', 'Veuillez ajouter une photo du compteur.');
     if (isBlocked) return Alert.alert('Erreur', blockedReason || 'Ce relevé ne peut pas être soumis.');
 
     setIsSubmitting(true);
@@ -241,9 +293,15 @@ const MeterReadingScreen = () => {
       const readings = await meterApi.getReadings(clientInfo.meterId);
       const items = Array.isArray(readings?.data?.data) ? readings.data.data : Array.isArray(readings?.data) ? readings.data : [];
       const state = resolveReadingState(items);
+      const readingIdToUpdate = state.editableReadingId ?? editableReadingId;
+      const hasPhotoForSubmission =
+        !!selectedImage || (!!readingIdToUpdate && !!existingPhotoUri);
 
-      setEditableReadingId(state.editableReadingId);
+      setEditableReadingId(readingIdToUpdate);
       if (state.isBlocked) throw new Error(state.blockedReason || "Impossible d'enregistrer le relevé.");
+      if (!isInaccessible && !hasPhotoForSubmission) {
+        throw new Error('Veuillez ajouter une photo du compteur.');
+      }
 
       const parsedIndex = Number(currentIndex.replace(/,/g, '.').trim());
       if (!isInaccessible && Number.isNaN(parsedIndex)) throw new Error('Index invalide.');
@@ -251,24 +309,23 @@ const MeterReadingScreen = () => {
       if (!isInaccessible && parsedIndex < clientInfo.previousIndex) {
         Alert.alert('Attention', `L'index actuel (${parsedIndex}) est inférieur à l'index précédent (${clientInfo.previousIndex}). Voulez-vous continuer ?`, [
           { text: 'Annuler', style: 'cancel', onPress: () => setIsSubmitting(false) },
-          { text: 'Continuer', onPress: () => submitReadingData(parsedIndex) }
+          { text: 'Continuer', onPress: () => submitReadingData(parsedIndex, readingIdToUpdate) }
         ]);
         return;
       }
 
-      await submitReadingData(parsedIndex);
+      await submitReadingData(parsedIndex, readingIdToUpdate);
     } catch (error: any) {
       setSubmitError(error?.message || "Impossible d'enregistrer le relevé.");
       setIsSubmitting(false);
     }
   };
 
-  const submitReadingData = async (parsedIndex: number) => {
+  const submitReadingData = async (parsedIndex: number, readingIdToUpdate?: number | null) => {
     try {
       setUploadProgress('Préparation des données...');
       await new Promise(r => setTimeout(r, 300));
 
-      const readingIdToUpdate = editableReadingId;
       const payload = {
         meterId: clientInfo!.meterId,
         meterReadingId: readingIdToUpdate || undefined,
@@ -313,7 +370,7 @@ const MeterReadingScreen = () => {
             setUploadProgress('');
             setIsBlocked(true);
             setBlockedReason("Relevé en attente d'approbation");
-            setEditableReadingId(readingIdToUpdate);
+            setEditableReadingId(readingIdToUpdate ?? null);
           },
         }]);
       }, 1000);
@@ -334,6 +391,8 @@ const MeterReadingScreen = () => {
     setSelectedImage(null);
     setIsInaccessible(false);
   };
+
+  const displayedPhotoUri = selectedImage || existingPhotoUri;
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
@@ -465,11 +524,17 @@ const MeterReadingScreen = () => {
                 />
 
                 <Text style={styles.inputLabel}>Photo du Compteur</Text>
-                {selectedImage ? (
+                {displayedPhotoUri ? (
                   <View style={styles.photoPreview}>
-                    <Image source={{ uri: selectedImage }} style={styles.previewImage} resizeMode="cover" />
-                    <TouchableOpacity style={styles.removePhotoButton} onPress={() => setSelectedImage(null)} disabled={!canTakeReading || statusCheckLoading}>
-                      <Text style={styles.removePhotoText}>✕ Supprimer</Text>
+                    <Image source={{ uri: displayedPhotoUri }} style={styles.previewImage} resizeMode="cover" />
+                    <TouchableOpacity
+                      style={styles.removePhotoButton}
+                      onPress={() => (selectedImage ? setSelectedImage(null) : handleChoosePhoto())}
+                      disabled={!canTakeReading || statusCheckLoading}
+                    >
+                      <Text style={styles.removePhotoText}>
+                        {selectedImage ? '✕ Supprimer' : '📷 Remplacer'}
+                      </Text>
                     </TouchableOpacity>
                   </View>
                 ) : (

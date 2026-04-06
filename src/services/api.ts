@@ -457,18 +457,34 @@ export const meterApi = {
       data.isInaccessible && typeof data.previousIndex === 'number'
         ? data.previousIndex
         : data.currentIndex;
+    const previousIndex =
+      typeof data.previousIndex === 'number' && !Number.isNaN(data.previousIndex)
+        ? data.previousIndex
+        : undefined;
+    const consumption =
+      typeof currentIndex === 'number' && typeof previousIndex === 'number'
+        ? Math.max(0, currentIndex - previousIndex)
+        : undefined;
 
     form.append('meterReadingId', String(data.meterReadingId));
 
     if (typeof currentIndex === 'number' && !Number.isNaN(currentIndex)) {
       form.append('currentIndex', String(currentIndex));
     }
+    if (typeof previousIndex === 'number') {
+      form.append('previousIndex', String(previousIndex));
+    }
+    if (typeof consumption === 'number') {
+      form.append('consumption', String(consumption));
+    }
+
+    form.append('accessReason', data.isInaccessible ? 'Door_Closed' : 'Accessed');
 
     if (data.longitude) form.append('longitude', data.longitude);
     if (data.latitude) form.append('latitude', data.latitude);
 
     if (data.imageUri) {
-      form.append('image', buildMultipartFile(data.imageUri, 'meter-reading'));
+      form.append('evidencePhotoUrl', buildMultipartFile(data.imageUri, 'meter-reading'));
     }
 
     return await apiUpload(`/meter-readings/${data.meterReadingId}`, form, 'PUT');
