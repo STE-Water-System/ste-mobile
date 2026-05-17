@@ -1,6 +1,13 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+export const API_BASE_URL =
+  process.env.EXPO_PUBLIC_API_BASE_URL || 'http://187.124.172.217/api';
+
+export interface UploadableImage {
+  uri: string;
+  fileName?: string | null;
+  mimeType?: string | null;
+}
 
 // Storage keys
 export const STORAGE_KEYS = {
@@ -58,6 +65,64 @@ export const getStoredUser = async () => {
   }
 };
 
+const getErrorMessage = (data: any, fallback: string) => {
+  if (typeof data === 'string' && data.trim()) return data;
+  if (data && typeof data === 'object') {
+    if (typeof data.message === 'string' && data.message.trim()) return data.message;
+    if (typeof data.error === 'string' && data.error.trim()) return data.error;
+  }
+
+  return fallback;
+};
+
+const parseResponseBody = async (response: Response) => {
+  const raw = await response.text();
+  if (!raw) return null;
+
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return raw;
+  }
+};
+
+export const normalizeServerAssetUrl = (assetUrl?: string | null) => {
+  if (!assetUrl?.trim()) return null;
+
+  const baseUrl = API_BASE_URL.replace(/\/api$/, '');
+
+  try {
+    const parsed = new URL(assetUrl);
+    if (['localhost', '127.0.0.1', '10.0.2.2'].includes(parsed.hostname)) {
+      return `${baseUrl}${parsed.pathname}${parsed.search}`;
+    }
+    return assetUrl;
+  } catch {
+    return assetUrl.startsWith('/') ? `${baseUrl}${assetUrl}` : `${baseUrl}/${assetUrl}`;
+  }
+};
+
+const buildMultipartFile = (image: UploadableImage, filenamePrefix: string) => {
+  const uri = image.uri;
+  const normalizedMimeType =
+    image.mimeType ||
+    (uri.split('.').pop()?.toLowerCase() === 'png' ? 'image/png' : 'image/jpeg');
+  const extensionFromMime = normalizedMimeType.split('/')[1]?.toLowerCase();
+  const extensionFromUri = uri.split('.').pop()?.toLowerCase();
+  const fileExtension =
+    extensionFromMime || extensionFromUri || 'jpg';
+  const fileName =
+    image.fileName && image.fileName.includes('.')
+      ? image.fileName
+      : `${filenamePrefix}-${Date.now()}.${fileExtension}`;
+
+  return {
+    uri,
+    name: fileName,
+    type: normalizedMimeType,
+  } as any;
+};
+
 // API request helper
 const apiRequest = async (
   endpoint: string,
@@ -79,10 +144,10 @@ const apiRequest = async (
     headers,
   });
 
-  const data = await response.json();
+  const data = await parseResponseBody(response);
 
   if (!response.ok) {
-    throw new Error(data.message || 'API request failed');
+    throw new Error(getErrorMessage(data, response.statusText || 'API request failed'));
   }
 
   return data;
@@ -91,7 +156,8 @@ const apiRequest = async (
 // API upload helper (multipart/form-data)
 const apiUpload = async (
   endpoint: string,
-  formData: FormData
+  formData: FormData,
+  method: 'POST' | 'PUT' = 'POST'
 ): Promise<any> => {
   const token = await getToken();
 
@@ -101,15 +167,15 @@ const apiUpload = async (
   }
 
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    method: 'POST',
+    method,
     headers,
     body: formData,
   });
 
-  const data = await response.json();
+  const data = await parseResponseBody(response);
 
   if (!response.ok) {
-    throw new Error(data.message || 'API request failed');
+    throw new Error(getErrorMessage(data, response.statusText || 'API request failed'));
   }
 
   return data;
@@ -199,71 +265,42 @@ export const meterApi = {
     };
   },
 
-  getByCustomerCode: async (customerCode: string) => {
+  getByCustomerCode: async (customerIdOrCode: string) => {
     try {
-      // First, find the customer in connection-request to get customerId
-      const listResp = await apiRequest(`/connection-request?page=1&limit=100`, { method: "GET" });
-      if (!listResp?.success || !listResp?.data?.data) {
-        return { success: false, message: "Customer not found" };
-      }
-      const rows = listResp.data.data as any[];
-      const match = rows.find((r) => r?.customer?.customerCode === customerCode);
-      if (!match || !match.customer) {
-        return { success: false, message: "Customer not found" };
-      }
+      // Try to use the direct meter-readings/customer endpoint with the ID
+      const resp = await apiRequest(`/meter-readings/customer/${customerIdOrCode}`, { method: "GET" });
+      
+      if (resp?.success && resp?.data) {
+        const customerPayload = resp.data as any;
+        const meters = Array.isArray(customerPayload?.meters) ? customerPayload.meters : [];
+        const meter = meters.length > 0 ? meters[0] : null;
 
-      const customerId = match.customer.customerId;
-      const customer = match.customer;
-
-      // Use meter-readings endpoint filtered by customerId to get meter data
-      // This returns meter readings with meter and customer info
-      try {
-        const resp = await apiRequest(`/meter-readings?customerId=${customerId}&page=1&limit=50`, { method: "GET" });
-
-        if (resp?.success && resp?.data?.data && resp.data.data.length > 0) {
-          // Get the first reading which contains meter info
-          const firstReading = resp.data.data[0];
-          const meter = firstReading.meter;
-
-          // Find the latest APPROVED reading by date - only use validated index
-          const allReadings = resp.data.data;
-          const approvedReadings = allReadings.filter(
+        // Derive lastReading from the meter's meterReading list (latest APPROVED reading)
+        let lastReading: { readingValue?: number } | null = null;
+        if (meter && Array.isArray(meter.meterReading) && meter.meterReading.length > 0) {
+          const approvedReadings = meter.meterReading.filter(
             (reading: any) => String(reading?.status || '').toLowerCase() === 'approved'
           );
           
-          const latestApprovedReading = approvedReadings.length > 0
-            ? [...approvedReadings].sort(
-                (a: any, b: any) => new Date(b.readingDate).getTime() - new Date(a.readingDate).getTime()
-              )[0]
-            : null;
-
-          const lastReading = latestApprovedReading
-            ? { readingValue: Number(latestApprovedReading.currentIndex) || 0 }
-            : null;
-
-          return {
-            success: true,
-            data: {
-              meter,
-              customer: meter?.customer || customer,
-              lastReading,
-            },
-          };
+          if (approvedReadings.length > 0) {
+            const latest = [...approvedReadings].sort(
+              (a: any, b: any) => new Date(b.readingDate).getTime() - new Date(a.readingDate).getTime()
+            )[0];
+            lastReading = { readingValue: Number(latest.currentIndex) || 0 };
+          }
         }
-      } catch (meterErr: any) {
-        // If meter-readings endpoint fails, fall back to connection-request data
-        console.warn("meter-readings endpoint failed, using connection-request data", meterErr?.message);
+
+        return {
+          success: true,
+          data: {
+            meter,
+            customer: customerPayload,
+            lastReading,
+          },
+        };
       }
 
-      // Fallback: return connection-request data (meter might be null)
-      return {
-        success: true,
-        data: {
-          meter: match.meter,
-          customer: customer,
-          lastReading: null,
-        },
-      };
+      return { success: false, message: "Customer not found" };
     } catch (err: any) {
       return { success: false, message: err?.message || "Customer not found" };
     }
@@ -389,7 +426,7 @@ export const meterApi = {
     currentIndex?: number;
     previousIndex?: number;
     isInaccessible: boolean;
-    imageUri?: string;
+    image?: UploadableImage;
     notes?: string;
     longitude?: string;
     latitude?: string;
@@ -431,20 +468,58 @@ export const meterApi = {
     if (data.notes) form.append('comments', data.notes);
 
     // Evidence photo - React Native requires specific format
-    if (data.imageUri) {
-      const filename = `evidence-${Date.now()}.jpg`;
-      const fileExtension = data.imageUri.split('.').pop()?.toLowerCase() || 'jpg';
-      const mimeType = fileExtension === 'png' ? 'image/png' : 'image/jpeg';
-
-      // React Native FormData expects this specific format
-      form.append('evidencePhotoUrl', {
-        uri: data.imageUri,
-        name: filename,
-        type: mimeType,
-      } as any);
+    if (data.image) {
+      form.append('evidencePhotoUrl', buildMultipartFile(data.image, 'evidence'));
     }
 
     return await apiUpload(`/meter-readings/new`, form);
+  },
+
+  updateReading: async (data: {
+    meterReadingId: number;
+    currentIndex?: number;
+    previousIndex?: number;
+    isInaccessible?: boolean;
+    image?: UploadableImage;
+    longitude?: string;
+    latitude?: string;
+  }) => {
+    const form = new FormData();
+    const currentIndex =
+      data.isInaccessible && typeof data.previousIndex === 'number'
+        ? data.previousIndex
+        : data.currentIndex;
+    const previousIndex =
+      typeof data.previousIndex === 'number' && !Number.isNaN(data.previousIndex)
+        ? data.previousIndex
+        : undefined;
+    const consumption =
+      typeof currentIndex === 'number' && typeof previousIndex === 'number'
+        ? Math.max(0, currentIndex - previousIndex)
+        : undefined;
+
+    form.append('meterReadingId', String(data.meterReadingId));
+
+    if (typeof currentIndex === 'number' && !Number.isNaN(currentIndex)) {
+      form.append('currentIndex', String(currentIndex));
+    }
+    if (typeof previousIndex === 'number') {
+      form.append('previousIndex', String(previousIndex));
+    }
+    if (typeof consumption === 'number') {
+      form.append('consumption', String(consumption));
+    }
+
+    form.append('accessReason', data.isInaccessible ? 'Door_Closed' : 'Accessed');
+
+    if (data.longitude) form.append('longitude', data.longitude);
+    if (data.latitude) form.append('latitude', data.latitude);
+
+    if (data.image) {
+      form.append('evidencePhotoUrl', buildMultipartFile(data.image, 'meter-reading'));
+    }
+
+    return await apiUpload(`/meter-readings/${data.meterReadingId}`, form, 'PUT');
   },
 };
 
@@ -512,10 +587,47 @@ export const billingApi = {
 // Customer API endpoints
 export const customerApi = {
   searchByCode: async (code: string, phone?: string) => {
-    // Use the connection-request endpoint with pagination to get relations
+    // First try to use the direct meter-readings/customer endpoint with the ID
+    try {
+      const directResp = await apiRequest(`/meter-readings/customer/${code}`, { method: "GET" });
+      
+      if (directResp?.success && directResp?.data) {
+        const customerPayload = directResp.data as any;
+        const customerName = `${customerPayload?.firstName || ''} ${customerPayload?.lastName || ''}`.trim();
+        
+        // Build address string
+        let addressString = '';
+        if (customerPayload?.address) {
+          const addr = customerPayload.address;
+          addressString = [addr.streetName, addr.streetNumber, addr.city?.cityName]
+            .filter(Boolean)
+            .join(', ');
+        }
+
+        return {
+          success: true,
+          data: {
+            ...customerPayload,
+            clientId: customerPayload.customerCode || code,
+            name: customerName || 'Client',
+            address: addressString || undefined,
+            stats: {
+              monthlyConsumption: 0,
+              totalBills: 0,
+              paidBills: 0,
+              unpaidBills: 0,
+            },
+          },
+        };
+      }
+    } catch (err) {
+      // Fall back to connection-request search
+      console.warn('Direct customer lookup failed, trying connection-request');
+    }
+
+    // Fallback: Use the connection-request endpoint with pagination to get relations
     let endpoint = `/connection-request?page=1&limit=100`;
     if (phone) {
-      // If phone is provided, use search param
       endpoint += `&search=${encodeURIComponent(phone)}`;
     }
 
@@ -524,10 +636,11 @@ export const customerApi = {
     });
 
     if (response.success && response.data && Array.isArray(response.data.data)) {
-      // Filter client-side for the exact customer code match
+      // Filter client-side for the exact customer code or ID match
       const match = response.data.data.find(
         (r: any) =>
-          r?.customer?.customerCode === code && (!phone || r?.customer?.phone === phone)
+          (r?.customer?.customerCode === code || String(r?.customer?.customerId) === code) && 
+          (!phone || r?.customer?.phone === phone)
       );
 
       // If we found a match, fetch additional data and return enriched customer

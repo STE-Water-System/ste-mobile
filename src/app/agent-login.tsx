@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -10,15 +10,17 @@ import {
   KeyboardAvoidingView,
   Platform,
   I18nManager,
+  StatusBar,
+  ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
+import { Colors, Spacing, BorderRadius, Typography, Shadows } from '../constants/theme';
 
 const AgentLoginScreen = () => {
   const router = useRouter();
-  const { agentId } = useLocalSearchParams();
   const { login } = useAuth();
   const { t } = useTranslation();
   
@@ -26,6 +28,9 @@ const AgentLoginScreen = () => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
+  
+  const passwordRef = useRef<TextInput>(null);
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
@@ -37,90 +42,103 @@ const AgentLoginScreen = () => {
 
     try {
       await login(email.trim(), password.trim());
-      // Navigate to agent dashboard on successful login
       router.replace('/agent-dashboard');
     } catch (error: any) {
       Alert.alert(
         t('auth.loginError'),
         error.message || t('auth.invalidCreds'),
-        [
-          {
-            text: t('auth.retry'),
-            onPress: () => setPassword('')
-          }
-        ]
+        [{ text: t('auth.retry'), onPress: () => setPassword('') }]
       );
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleBackPress = () => {
-    router.back();
-  };
-
-  const handleForgotPassword = () => {
-    Alert.alert(
-      t('auth.forgotPasswordTitle'),
-      t('auth.forgotPasswordMsg'),
-      [
-        {
-          text: 'OK'
-        }
-      ]
-    );
-  };
-
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+      <StatusBar barStyle="dark-content" backgroundColor={Colors.background.primary} />
       <KeyboardAvoidingView 
         style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <View style={styles.content}>
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Header Section */}
           <View style={styles.header}>
             <View style={styles.logoContainer}>
-              <Text style={styles.logoIcon}>👨‍💼</Text>
+              <View style={styles.logoGradient}>
+                <Text style={styles.logoIcon}>💧</Text>
+              </View>
+              <View style={styles.logoRing} />
             </View>
+            <Text style={styles.brandName}>STE</Text>
             <Text style={styles.title}>{t('auth.loginTitle')}</Text>
-            <Text style={styles.subtitle}>STE</Text>
+            <Text style={styles.subtitle}>{t('auth.loginSubtitle')}</Text>
           </View>
 
+          {/* Form Section */}
           <View style={styles.formContainer}>
-            <View style={styles.inputContainer}>
+            <View style={styles.inputGroup}>
               <Text style={styles.label}>{t('auth.email')}</Text>
-              <TextInput
-                style={styles.input}
-                value={email}
-                onChangeText={setEmail}
-                placeholder={t('auth.emailPlaceholder')}
-                placeholderTextColor="#9CA3AF"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                editable={!isLoading}
-                textAlign={I18nManager.isRTL ? 'right' : 'left'}
-              />
+              <View style={[
+                styles.inputWrapper,
+                focusedField === 'email' && styles.inputFocused,
+              ]}>
+                <View style={styles.inputIconContainer}>
+                  <Text style={styles.inputIcon}>✉️</Text>
+                </View>
+                <TextInput
+                  style={styles.input}
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder={t('auth.emailPlaceholder')}
+                  placeholderTextColor={Colors.text.disabled}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  editable={!isLoading}
+                  textAlign={I18nManager.isRTL ? 'right' : 'left'}
+                  returnKeyType="next"
+                  onSubmitEditing={() => passwordRef.current?.focus()}
+                  onFocus={() => setFocusedField('email')}
+                  onBlur={() => setFocusedField(null)}
+                />
+              </View>
             </View>
 
-            <View style={styles.inputContainer}>
+            <View style={styles.inputGroup}>
               <Text style={styles.label}>{t('auth.password')}</Text>
-              <View style={styles.passwordContainer}>
+              <View style={[
+                styles.inputWrapper,
+                focusedField === 'password' && styles.inputFocused,
+              ]}>
+                <View style={styles.inputIconContainer}>
+                  <Text style={styles.inputIcon}>🔒</Text>
+                </View>
                 <TextInput
-                  style={styles.passwordInput}
+                  ref={passwordRef}
+                  style={styles.input}
                   value={password}
                   onChangeText={setPassword}
                   placeholder={t('auth.passwordPlaceholder')}
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor={Colors.text.disabled}
                   secureTextEntry={!showPassword}
                   autoCapitalize="none"
                   autoCorrect={false}
                   editable={!isLoading}
                   textAlign={I18nManager.isRTL ? 'right' : 'left'}
+                  returnKeyType="done"
+                  onSubmitEditing={handleLogin}
+                  onFocus={() => setFocusedField('password')}
+                  onBlur={() => setFocusedField(null)}
                 />
                 <TouchableOpacity
                   style={styles.eyeButton}
                   onPress={() => setShowPassword(!showPassword)}
+                  activeOpacity={0.7}
                 >
                   <Text style={styles.eyeIcon}>{showPassword ? '👁️' : '👁️‍🗨️'}</Text>
                 </TouchableOpacity>
@@ -131,28 +149,29 @@ const AgentLoginScreen = () => {
               style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
               onPress={handleLogin}
               disabled={isLoading}
+              activeOpacity={0.8}
             >
               {isLoading ? (
-                <ActivityIndicator color="#FFFFFF" size="small" />
+                <ActivityIndicator color={Colors.text.inverse} size="small" />
               ) : (
-                <Text style={styles.loginButtonText}>{t('auth.loginBtn')}</Text>
+                <>
+                  <Text style={styles.loginButtonText}>{t('auth.loginBtn')}</Text>
+                  <Text style={styles.loginButtonIcon}>→</Text>
+                </>
               )}
             </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.forgotPasswordButton}
-              onPress={handleForgotPassword}
-            >
-              <Text style={styles.forgotPasswordText}>{t('auth.forgotPassword')}</Text>
-            </TouchableOpacity>
           </View>
 
-          <View style={styles.helpContainer}>
-            <Text style={styles.helpTitle}>{t('auth.testInfo')}</Text>
-            <Text style={styles.helpText}>Email: agent@example.com</Text>
-            <Text style={styles.helpText}>{t('auth.password')}: agent123</Text>
+          {/* Footer */}
+          <View style={styles.footer}>
+            <View style={styles.footerDivider}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>STE</Text>
+              <View style={styles.dividerLine} />
+            </View>
+            <Text style={styles.footerText}>© 2025 Société Tchadienne des Eaux</Text>
           </View>
-        </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -161,148 +180,162 @@ const AgentLoginScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.background.primary,
   },
   keyboardView: {
     flex: 1,
   },
-  content: {
-    flex: 1,
-    padding: 24,
+  scrollContent: {
+    flexGrow: 1,
+    padding: Spacing['2xl'],
     justifyContent: 'center',
   },
   header: {
     alignItems: 'center',
-    marginBottom: 48,
+    marginBottom: Spacing['4xl'],
   },
   logoContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#F8FAFC',
+    position: 'relative',
+    marginBottom: Spacing['2xl'],
+  },
+  logoGradient: {
+    width: 88,
+    height: 88,
+    borderRadius: BorderRadius['2xl'],
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
+    backgroundColor: Colors.primary[500],
+    ...Shadows.xl,
+  },
+  logoRing: {
+    position: 'absolute',
+    top: -8,
+    left: -8,
+    right: -8,
+    bottom: -8,
+    borderRadius: BorderRadius['3xl'],
+    borderWidth: 2,
+    borderColor: Colors.primary[200],
+    borderStyle: 'dashed',
   },
   logoIcon: {
     fontSize: 40,
   },
+  brandName: {
+    fontSize: Typography.fontSize['4xl'],
+    fontWeight: '800',
+    color: Colors.text.primary,
+    letterSpacing: 3,
+    marginBottom: Spacing.sm,
+  },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#0F172A',
-    marginBottom: 8,
-    textAlign: 'center',
+    fontSize: Typography.fontSize['2xl'],
+    fontWeight: '700',
+    color: Colors.text.primary,
+    marginBottom: Spacing.sm,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#64748B',
-    marginBottom: 8,
+    fontSize: Typography.fontSize.md,
+    color: Colors.text.tertiary,
   },
   formContainer: {
-    marginBottom: 32,
+    marginBottom: Spacing['2xl'],
   },
-  inputContainer: {
-    marginBottom: 24,
+  inputGroup: {
+    marginBottom: Spacing.xl,
   },
   label: {
-    fontSize: 14,
+    fontSize: Typography.fontSize.md,
     fontWeight: '600',
-    color: '#0F172A',
-    marginBottom: 8,
-    textAlign: 'left',
+    color: Colors.text.primary,
+    marginBottom: Spacing.sm,
   },
-  input: {
-    backgroundColor: '#F8FAFC',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    fontSize: 16,
-    color: '#0F172A',
-  },
-  passwordContainer: {
+  inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 12,
+    backgroundColor: Colors.neutral[50],
+    borderWidth: 2,
+    borderColor: Colors.border.default,
+    borderRadius: BorderRadius.lg,
+    overflow: 'hidden',
   },
-  passwordInput: {
+  inputFocused: {
+    borderColor: Colors.primary[500],
+    backgroundColor: Colors.primary[50],
+  },
+  inputIconContainer: {
+    width: 52,
+    height: 56,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.neutral[100],
+    borderRightWidth: 1,
+    borderRightColor: Colors.border.default,
+  },
+  inputIcon: {
+    fontSize: 20,
+  },
+  input: {
     flex: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    fontSize: 16,
-    color: '#0F172A',
+    fontSize: Typography.fontSize.lg,
+    color: Colors.text.primary,
+    paddingHorizontal: Spacing.lg,
+    height: 56,
   },
   eyeButton: {
-    padding: 16,
+    padding: Spacing.lg,
   },
   eyeIcon: {
     fontSize: 20,
   },
   loginButton: {
-    backgroundColor: '#3B82F6', // Primary Blue
-    borderRadius: 12,
-    paddingVertical: 16,
+    flexDirection: 'row',
+    backgroundColor: Colors.primary[500],
+    borderRadius: BorderRadius.lg,
+    height: 56,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginTop: Spacing.lg,
+    gap: Spacing.sm,
+    ...Shadows.lg,
   },
   loginButtonDisabled: {
-    backgroundColor: '#94A3B8',
+    backgroundColor: Colors.neutral[400],
   },
   loginButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
+    color: Colors.text.inverse,
+    fontSize: Typography.fontSize.lg,
+    fontWeight: '700',
+  },
+  loginButtonIcon: {
+    color: Colors.text.inverse,
+    fontSize: 20,
     fontWeight: '600',
   },
-  forgotPasswordButton: {
+  footer: {
     alignItems: 'center',
+    marginTop: Spacing['3xl'],
   },
-  forgotPasswordText: {
-    color: '#3B82F6', // Primary Blue
-    fontSize: 14,
-    fontWeight: '500',
-    textDecorationLine: 'underline',
-  },
-  helpContainer: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  helpTitle: {
-    fontSize: 14,
-    color: '#0F172A',
-    fontWeight: '600',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  helpText: {
-    fontSize: 12,
-    color: '#64748B',
-    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
-    textAlign: 'center',
-    marginBottom: 2,
-  },
-  backButton: {
-    backgroundColor: '#F1F5F9',
-    borderRadius: 12,
-    paddingVertical: 16,
+  footerDivider: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    marginBottom: Spacing.lg,
+    width: '100%',
   },
-  backButtonText: {
-    color: '#64748B',
-    fontSize: 16,
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: Colors.border.default,
+  },
+  dividerText: {
+    paddingHorizontal: Spacing.lg,
+    fontSize: Typography.fontSize.sm,
     fontWeight: '600',
+    color: Colors.text.disabled,
+  },
+  footerText: {
+    fontSize: Typography.fontSize.sm,
+    color: Colors.text.disabled,
   },
 });
 
