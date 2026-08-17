@@ -79,10 +79,19 @@ const apiRequest = async (
     headers,
   });
 
-  const data = await response.json();
+  let data: any = {};
+  try {
+    data = await response.json();
+  } catch (e) {
+    data = {};
+  }
 
   if (!response.ok) {
-    throw new Error(data.message || 'API request failed');
+    if (data.errors && Array.isArray(data.errors) && data.errors.length > 0) {
+      const errorMsg = data.errors.map((err: any) => err.msg || err.message).join('\n');
+      throw new Error(errorMsg);
+    }
+    throw new Error(data.message || data.error || `Erreur requête (${response.status})`);
   }
 
   return data;
