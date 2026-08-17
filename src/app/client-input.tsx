@@ -121,7 +121,7 @@ const ClientInputScreen = () => {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Header with Official Emblem - no duplicate texts */}
+          {/* Header with Official Emblem */}
           <View style={styles.header}>
             <Image
               source={require('../../assets/splash-icon.png')}
@@ -130,7 +130,7 @@ const ClientInputScreen = () => {
             />
           </View>
 
-          {/* Compact Rounded Switcher */}
+          {/* Compact Switcher */}
           <View style={styles.tabBar}>
             <TouchableOpacity
               style={[styles.tabItem, activeTab === 'client' && styles.tabItemActive]}
@@ -163,7 +163,7 @@ const ClientInputScreen = () => {
             </TouchableOpacity>
           </View>
 
-          {/* Fully Rounded Form Area */}
+          {/* Compact Form */}
           {activeTab === 'client' ? (
             <View style={styles.form}>
               <View style={styles.inputGroup}>
@@ -185,7 +185,7 @@ const ClientInputScreen = () => {
                     <TouchableOpacity
                       onPress={() => setSearchId('')}
                       style={styles.clearBtn}
-                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     >
                       <Text style={styles.clearText}>✕</Text>
                     </TouchableOpacity>
@@ -211,7 +211,7 @@ const ClientInputScreen = () => {
                     <TouchableOpacity
                       onPress={() => setPhoneNumber('')}
                       style={styles.clearBtn}
-                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     >
                       <Text style={styles.clearText}>✕</Text>
                     </TouchableOpacity>
@@ -229,7 +229,7 @@ const ClientInputScreen = () => {
                   <ActivityIndicator color="#FFFFFF" size="small" />
                 ) : (
                   <Text style={styles.primaryButtonText}>
-                    {t('welcome.searchBtn') || 'Consulter mes factures'}
+                    {t('welcome.searchBtn') || 'Consulter'}
                   </Text>
                 )}
               </TouchableOpacity>
@@ -271,7 +271,7 @@ const ClientInputScreen = () => {
                   <TouchableOpacity
                     style={styles.clearBtn}
                     onPress={() => setShowPassword(!showPassword)}
-                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   >
                     <Text style={styles.eyeText}>{showPassword ? 'Masquer' : 'Afficher'}</Text>
                   </TouchableOpacity>
@@ -318,47 +318,47 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 24,
-    paddingTop: 12,
-    paddingBottom: 24,
+    paddingTop: 8,
+    paddingBottom: 20,
     justifyContent: 'space-between',
   },
 
   /* Header */
   header: {
     alignItems: 'center',
-    marginTop: 8,
-    marginBottom: 20,
+    marginTop: 4,
+    marginBottom: 16,
   },
   logo: {
-    width: 96,
-    height: 96,
+    width: 80,
+    height: 80,
   },
 
-  /* Fully Rounded Segmented Tab Bar */
+  /* Compact Rounded Segmented Tab Bar */
   tabBar: {
     flexDirection: 'row',
     backgroundColor: '#F1F5F9',
-    borderRadius: 9999,
-    padding: 4,
-    marginBottom: 24,
+    borderRadius: 14,
+    padding: 3,
+    marginBottom: 20,
   },
   tabItem: {
     flex: 1,
-    paddingVertical: 12,
+    paddingVertical: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 9999,
+    borderRadius: 12,
   },
   tabItemActive: {
     backgroundColor: '#FFFFFF',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.08,
-    shadowRadius: 4,
+    shadowRadius: 3,
     elevation: 2,
   },
   tabText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
     color: '#64748B',
   },
@@ -372,14 +372,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   inputGroup: {
-    marginBottom: 16,
+    marginBottom: 14,
   },
   label: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
-    color: '#334155',
-    marginBottom: 8,
-    marginLeft: 4,
+    color: '#475569',
+    marginBottom: 6,
+    marginLeft: 2,
   },
   inputWrapper: {
     flexDirection: 'row',
@@ -387,13 +387,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8FAFC',
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    borderRadius: 9999,
-    paddingHorizontal: 18,
-    height: 52,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    height: 46,
   },
   input: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '500',
     color: '#0F172A',
     paddingVertical: 0,
@@ -402,7 +402,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   clearText: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#94A3B8',
     fontWeight: '600',
   },
@@ -412,23 +412,18 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  /* Fully Rounded Action Button */
+  /* Compact Action Button */
   primaryButton: {
     backgroundColor: '#2563EB',
-    borderRadius: 9999,
-    height: 52,
+    borderRadius: 12,
+    height: 46,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 8,
-    shadowColor: '#2563EB',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 3,
+    marginTop: 6,
   },
   primaryButtonText: {
     color: '#FFFFFF',
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
   },
   buttonDisabled: {
@@ -438,10 +433,10 @@ const styles = StyleSheet.create({
   /* Footer */
   footer: {
     alignItems: 'center',
-    marginTop: 28,
+    marginTop: 24,
   },
   footerText: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#94A3B8',
     fontWeight: '500',
   },
