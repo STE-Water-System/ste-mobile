@@ -51,26 +51,26 @@ const ClientInputScreen = () => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 0,
-        duration: 100,
+        duration: 90,
         useNativeDriver: true,
       }),
       Animated.timing(slideAnim, {
-        toValue: newTab === 'agent' ? -10 : 10,
-        duration: 100,
+        toValue: newTab === 'agent' ? -8 : 8,
+        duration: 90,
         useNativeDriver: true,
       }),
     ]).start(() => {
       setActiveTab(newTab);
-      slideAnim.setValue(newTab === 'agent' ? 10 : -10);
+      slideAnim.setValue(newTab === 'agent' ? 8 : -8);
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
-          duration: 160,
+          duration: 150,
           useNativeDriver: true,
         }),
         Animated.timing(slideAnim, {
           toValue: 0,
-          duration: 160,
+          duration: 150,
           useNativeDriver: true,
         }),
       ]).start();
@@ -78,7 +78,6 @@ const ClientInputScreen = () => {
   };
 
   const handlePhoneChange = (text: string) => {
-    // Only accept numeric digits, spaces, and '+' prefix
     const cleanNumber = text.replace(/[^0-9\s+]/g, '');
     setPhoneNumber(cleanNumber);
   };
@@ -420,29 +419,29 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 24,
+    paddingTop: 12,
+    paddingBottom: 20,
     justifyContent: 'space-between',
   },
   mainContent: {
     flex: 1,
     justifyContent: 'center',
-    paddingVertical: 12,
+    paddingVertical: 8,
   },
 
-  /* Refined Circular Logo Frame */
+  /* Compact Circular Logo Frame */
   logoFrame: {
-    width: 82,
-    height: 82,
+    width: 76,
+    height: 76,
     borderRadius: 9999,
     alignSelf: 'center',
     backgroundColor: '#FFFFFF',
-    marginBottom: 24,
+    marginBottom: 20,
     overflow: 'hidden',
     shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.07,
+    shadowRadius: 6,
     elevation: 2,
   },
   logo: {
@@ -450,17 +449,17 @@ const styles = StyleSheet.create({
     height: '100%',
   },
 
-  /* Clean Switcher */
+  /* Sleek Compact Switcher */
   tabBar: {
     flexDirection: 'row',
     backgroundColor: '#F1F5F9',
     borderRadius: 9999,
-    padding: 4,
-    marginBottom: 24,
+    padding: 3,
+    marginBottom: 20,
   },
   tabItem: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: 7,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 9999,
@@ -468,9 +467,9 @@ const styles = StyleSheet.create({
   tabItemActive: {
     backgroundColor: '#FFFFFF',
     shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 1.5 },
     shadowOpacity: 0.06,
-    shadowRadius: 4,
+    shadowRadius: 3,
     elevation: 2,
   },
   tabText: {
@@ -483,21 +482,21 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  /* Modern Form */
+  /* Form */
   form: {
     width: '100%',
   },
   inputGroup: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
   label: {
     fontSize: 12,
     fontWeight: '600',
     color: '#475569',
-    marginBottom: 6,
+    marginBottom: 5,
     marginLeft: 8,
   },
-  /* Modern clean filled pill with soft border and no flickering */
+  /* Slimmer, sleek 40px input height */
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -505,12 +504,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E2E8F0',
     borderRadius: 9999,
-    paddingHorizontal: 18,
-    height: 48,
+    paddingHorizontal: 16,
+    height: 40,
   },
   input: {
     flex: 1,
-    fontSize: 14,
+    fontSize: 13.5,
     fontWeight: '500',
     color: '#0F172A',
     paddingVertical: 0,
@@ -519,28 +518,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   clearText: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#94A3B8',
     fontWeight: '600',
   },
   eyeText: {
-    fontSize: 12,
+    fontSize: 11.5,
     color: '#2563EB',
     fontWeight: '600',
   },
 
-  /* Primary Button */
+  /* Sleek Compact Primary Button */
   primaryButton: {
     backgroundColor: '#2563EB',
     borderRadius: 9999,
-    height: 48,
+    height: 42,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 8,
+    marginTop: 6,
     shadowColor: '#2563EB',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.22,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
     elevation: 3,
   },
   buttonInner: {
@@ -550,13 +549,13 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: 13.5,
     fontWeight: '700',
     marginRight: 6,
   },
   buttonArrow: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: 13.5,
     fontWeight: '700',
   },
   buttonDisabled: {
@@ -566,8 +565,8 @@ const styles = StyleSheet.create({
   /* Minimalist Help Link */
   helpLink: {
     alignSelf: 'center',
-    paddingVertical: 14,
-    marginTop: 6,
+    paddingVertical: 12,
+    marginTop: 4,
   },
   helpLinkText: {
     fontSize: 12,
@@ -579,7 +578,7 @@ const styles = StyleSheet.create({
   /* Footer */
   footer: {
     alignItems: 'center',
-    paddingTop: 16,
+    paddingTop: 12,
   },
   footerText: {
     fontSize: 11,
