@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
   Platform,
   ScrollView,
   Image,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -27,7 +28,10 @@ const ClientInputScreen = () => {
   const currentYear = new Date().getFullYear();
 
   const [activeTab, setActiveTab] = useState<'client' | 'agent'>('client');
-  const [focusedField, setFocusedField] = useState<string | null>(null);
+
+  // Animation values for smooth tab transition
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const slideAnim = useRef(new Animated.Value(0)).current;
 
   // Client form
   const [searchId, setSearchId] = useState('');
@@ -39,6 +43,45 @@ const ClientInputScreen = () => {
   const [agentPassword, setAgentPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isAgentLoggingIn, setIsAgentLoggingIn] = useState(false);
+
+  // Smooth Tab Switcher
+  const handleTabSwitch = (newTab: 'client' | 'agent') => {
+    if (newTab === activeTab) return;
+
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: newTab === 'agent' ? -10 : 10,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setActiveTab(newTab);
+      slideAnim.setValue(newTab === 'agent' ? 10 : -10);
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 160,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 160,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    });
+  };
+
+  const handlePhoneChange = (text: string) => {
+    // Only accept numeric digits, spaces, and '+' prefix
+    const cleanNumber = text.replace(/[^0-9\s+]/g, '');
+    setPhoneNumber(cleanNumber);
+  };
 
   const handleCustomerSearch = async () => {
     const targetCode = searchId.trim();
@@ -152,7 +195,7 @@ const ClientInputScreen = () => {
             <View style={styles.tabBar}>
               <TouchableOpacity
                 style={[styles.tabItem, activeTab === 'client' && styles.tabItemActive]}
-                onPress={() => setActiveTab('client')}
+                onPress={() => handleTabSwitch('client')}
                 activeOpacity={0.85}
               >
                 <Text
@@ -167,7 +210,7 @@ const ClientInputScreen = () => {
 
               <TouchableOpacity
                 style={[styles.tabItem, activeTab === 'agent' && styles.tabItemActive]}
-                onPress={() => setActiveTab('agent')}
+                onPress={() => handleTabSwitch('agent')}
                 activeOpacity={0.85}
               >
                 <Text
@@ -181,191 +224,177 @@ const ClientInputScreen = () => {
               </TouchableOpacity>
             </View>
 
-            {/* Modern Form Area */}
-            {activeTab === 'client' ? (
-              <View style={styles.form}>
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>
-                    {t('welcome.clientCodeLabel') || 'Code Client'}
-                  </Text>
-                  <View
-                    style={[
-                      styles.inputWrapper,
-                      focusedField === 'clientCode' && styles.inputWrapperFocused,
-                    ]}
+            {/* Animated Form Container */}
+            <Animated.View
+              style={[
+                styles.form,
+                {
+                  opacity: fadeAnim,
+                  transform: [{ translateX: slideAnim }],
+                },
+              ]}
+            >
+              {activeTab === 'client' ? (
+                <View key="client-form">
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.label}>
+                      {t('welcome.clientCodeLabel') || 'Code Client'}
+                    </Text>
+                    <View style={styles.inputWrapper}>
+                      <TextInput
+                        style={styles.input}
+                        value={searchId}
+                        onChangeText={setSearchId}
+                        placeholder="CUST-001"
+                        placeholderTextColor="#94A3B8"
+                        autoCapitalize="characters"
+                        autoCorrect={false}
+                        editable={!isLoading}
+                      />
+                      {searchId.length > 0 && (
+                        <TouchableOpacity
+                          onPress={() => setSearchId('')}
+                          style={styles.clearBtn}
+                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        >
+                          <Text style={styles.clearText}>✕</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  </View>
+
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.label}>
+                      {t('welcome.phoneLabel') || 'Téléphone'}
+                    </Text>
+                    <View style={styles.inputWrapper}>
+                      <TextInput
+                        style={styles.input}
+                        value={phoneNumber}
+                        onChangeText={handlePhoneChange}
+                        placeholder="66 00 00 00"
+                        placeholderTextColor="#94A3B8"
+                        keyboardType="phone-pad"
+                        textContentType="telephoneNumber"
+                        autoComplete="tel"
+                        editable={!isLoading}
+                      />
+                      {phoneNumber.length > 0 && (
+                        <TouchableOpacity
+                          onPress={() => setPhoneNumber('')}
+                          style={styles.clearBtn}
+                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        >
+                          <Text style={styles.clearText}>✕</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  </View>
+
+                  <TouchableOpacity
+                    style={[styles.primaryButton, isLoading && styles.buttonDisabled]}
+                    onPress={handleCustomerSearch}
+                    disabled={isLoading}
+                    activeOpacity={0.85}
                   >
-                    <TextInput
-                      style={styles.input}
-                      value={searchId}
-                      onChangeText={setSearchId}
-                      placeholder="CUST-001"
-                      placeholderTextColor="#94A3B8"
-                      autoCapitalize="characters"
-                      autoCorrect={false}
-                      editable={!isLoading}
-                      onFocus={() => setFocusedField('clientCode')}
-                      onBlur={() => setFocusedField(null)}
-                    />
-                    {searchId.length > 0 && (
+                    {isLoading ? (
+                      <ActivityIndicator color="#FFFFFF" size="small" />
+                    ) : (
+                      <View style={styles.buttonInner}>
+                        <Text style={styles.primaryButtonText}>
+                          {t('welcome.searchBtn') || 'Consulter mes factures'}
+                        </Text>
+                        <Text style={styles.buttonArrow}>→</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.helpLink}
+                    onPress={handleHelpPress}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.helpLinkText}>
+                      Où trouver mon code client ?
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <View key="agent-form">
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.label}>{t('auth.email') || 'Email'}</Text>
+                    <View style={styles.inputWrapper}>
+                      <TextInput
+                        style={styles.input}
+                        value={agentEmail}
+                        onChangeText={setAgentEmail}
+                        placeholder="agent@example.com"
+                        placeholderTextColor="#94A3B8"
+                        keyboardType="email-address"
+                        textContentType="emailAddress"
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        editable={!isAgentLoggingIn}
+                      />
+                    </View>
+                  </View>
+
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.label}>
+                      {t('auth.password') || 'Mot de passe'}
+                    </Text>
+                    <View style={styles.inputWrapper}>
+                      <TextInput
+                        style={styles.input}
+                        value={agentPassword}
+                        onChangeText={setAgentPassword}
+                        placeholder="••••••••"
+                        placeholderTextColor="#94A3B8"
+                        secureTextEntry={!showPassword}
+                        textContentType="password"
+                        autoCapitalize="none"
+                        editable={!isAgentLoggingIn}
+                      />
                       <TouchableOpacity
-                        onPress={() => setSearchId('')}
                         style={styles.clearBtn}
+                        onPress={() => setShowPassword(!showPassword)}
                         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                       >
-                        <Text style={styles.clearText}>✕</Text>
+                        <Text style={styles.eyeText}>{showPassword ? 'Masquer' : 'Afficher'}</Text>
                       </TouchableOpacity>
-                    )}
-                  </View>
-                </View>
-
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>
-                    {t('welcome.phoneLabel') || 'Téléphone'}
-                  </Text>
-                  <View
-                    style={[
-                      styles.inputWrapper,
-                      focusedField === 'phone' && styles.inputWrapperFocused,
-                    ]}
-                  >
-                    <TextInput
-                      style={styles.input}
-                      value={phoneNumber}
-                      onChangeText={setPhoneNumber}
-                      placeholder="66 00 00 00"
-                      placeholderTextColor="#94A3B8"
-                      keyboardType="phone-pad"
-                      editable={!isLoading}
-                      onFocus={() => setFocusedField('phone')}
-                      onBlur={() => setFocusedField(null)}
-                    />
-                    {phoneNumber.length > 0 && (
-                      <TouchableOpacity
-                        onPress={() => setPhoneNumber('')}
-                        style={styles.clearBtn}
-                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                      >
-                        <Text style={styles.clearText}>✕</Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                </View>
-
-                <TouchableOpacity
-                  style={[styles.primaryButton, isLoading && styles.buttonDisabled]}
-                  onPress={handleCustomerSearch}
-                  disabled={isLoading}
-                  activeOpacity={0.85}
-                >
-                  {isLoading ? (
-                    <ActivityIndicator color="#FFFFFF" size="small" />
-                  ) : (
-                    <View style={styles.buttonInner}>
-                      <Text style={styles.primaryButtonText}>
-                        {t('welcome.searchBtn') || 'Consulter mes factures'}
-                      </Text>
-                      <Text style={styles.buttonArrow}>→</Text>
                     </View>
-                  )}
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.helpLink}
-                  onPress={handleHelpPress}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.helpLinkText}>
-                    Où trouver mon code client ?
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <View style={styles.form}>
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>{t('auth.email') || 'Email'}</Text>
-                  <View
-                    style={[
-                      styles.inputWrapper,
-                      focusedField === 'email' && styles.inputWrapperFocused,
-                    ]}
-                  >
-                    <TextInput
-                      style={styles.input}
-                      value={agentEmail}
-                      onChangeText={setAgentEmail}
-                      placeholder="agent@example.com"
-                      placeholderTextColor="#94A3B8"
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                      editable={!isAgentLoggingIn}
-                      onFocus={() => setFocusedField('email')}
-                      onBlur={() => setFocusedField(null)}
-                    />
                   </View>
-                </View>
 
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>
-                    {t('auth.password') || 'Mot de passe'}
-                  </Text>
-                  <View
-                    style={[
-                      styles.inputWrapper,
-                      focusedField === 'password' && styles.inputWrapperFocused,
-                    ]}
+                  <TouchableOpacity
+                    style={[styles.primaryButton, isAgentLoggingIn && styles.buttonDisabled]}
+                    onPress={handleAgentLogin}
+                    disabled={isAgentLoggingIn}
+                    activeOpacity={0.85}
                   >
-                    <TextInput
-                      style={styles.input}
-                      value={agentPassword}
-                      onChangeText={setAgentPassword}
-                      placeholder="••••••••"
-                      placeholderTextColor="#94A3B8"
-                      secureTextEntry={!showPassword}
-                      autoCapitalize="none"
-                      editable={!isAgentLoggingIn}
-                      onFocus={() => setFocusedField('password')}
-                      onBlur={() => setFocusedField(null)}
-                    />
-                    <TouchableOpacity
-                      style={styles.clearBtn}
-                      onPress={() => setShowPassword(!showPassword)}
-                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                    >
-                      <Text style={styles.eyeText}>{showPassword ? 'Masquer' : 'Afficher'}</Text>
-                    </TouchableOpacity>
-                  </View>
+                    {isAgentLoggingIn ? (
+                      <ActivityIndicator color="#FFFFFF" size="small" />
+                    ) : (
+                      <View style={styles.buttonInner}>
+                        <Text style={styles.primaryButtonText}>
+                          {t('auth.loginBtn') || 'Se connecter'}
+                        </Text>
+                        <Text style={styles.buttonArrow}>→</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.helpLink}
+                    onPress={handleHelpPress}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.helpLinkText}>
+                      {t('auth.forgotPassword') || 'Mot de passe oublié ?'}
+                    </Text>
+                  </TouchableOpacity>
                 </View>
-
-                <TouchableOpacity
-                  style={[styles.primaryButton, isAgentLoggingIn && styles.buttonDisabled]}
-                  onPress={handleAgentLogin}
-                  disabled={isAgentLoggingIn}
-                  activeOpacity={0.85}
-                >
-                  {isAgentLoggingIn ? (
-                    <ActivityIndicator color="#FFFFFF" size="small" />
-                  ) : (
-                    <View style={styles.buttonInner}>
-                      <Text style={styles.primaryButtonText}>
-                        {t('auth.loginBtn') || 'Se connecter'}
-                      </Text>
-                      <Text style={styles.buttonArrow}>→</Text>
-                    </View>
-                  )}
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.helpLink}
-                  onPress={handleHelpPress}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.helpLinkText}>
-                    {t('auth.forgotPassword') || 'Mot de passe oublié ?'}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
+              )}
+            </Animated.View>
           </View>
 
           {/* Dynamic Copyright Footer */}
@@ -468,25 +497,16 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     marginLeft: 8,
   },
-  /* Soft filled background with zero harsh grey outline */
+  /* Modern clean filled pill with soft border and no flickering */
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F8FAFC',
-    borderWidth: 1.5,
-    borderColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
     borderRadius: 9999,
     paddingHorizontal: 18,
     height: 48,
-  },
-  inputWrapperFocused: {
-    backgroundColor: '#FFFFFF',
-    borderColor: '#2563EB',
-    shadowColor: '#2563EB',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    elevation: 2,
   },
   input: {
     flex: 1,
