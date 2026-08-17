@@ -27,6 +27,7 @@ const ClientInputScreen = () => {
   const currentYear = new Date().getFullYear();
 
   const [activeTab, setActiveTab] = useState<'client' | 'agent'>('client');
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   // Client form
   const [searchId, setSearchId] = useState('');
@@ -110,6 +111,22 @@ const ClientInputScreen = () => {
     }
   };
 
+  const handleHelpPress = () => {
+    if (activeTab === 'client') {
+      Alert.alert(
+        'Code Client STE',
+        'Votre code client (ex: CUST-001) est indiqué en haut à gauche de votre facture d\'eau papier ou sur votre reçu de paiement STE.',
+        [{ text: 'Compris' }]
+      );
+    } else {
+      Alert.alert(
+        t('auth.forgotPasswordTitle') || 'Mot de passe oublié',
+        t('auth.forgotPasswordMsg') || 'Contactez votre administrateur système STE pour réinitialiser vos identifiants.',
+        [{ text: 'OK' }]
+      );
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
       <KeyboardAvoidingView
@@ -121,181 +138,237 @@ const ClientInputScreen = () => {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Header with Official Emblem */}
-          <View style={styles.header}>
-            <Image
-              source={require('../../assets/splash-icon.png')}
-              style={styles.logo}
-              resizeMode="contain"
-            />
-          </View>
+          <View style={styles.mainContent}>
+            {/* Logo Emblem */}
+            <View style={styles.logoFrame}>
+              <Image
+                source={require('../../assets/splash-icon.png')}
+                style={styles.logo}
+                resizeMode="cover"
+              />
+            </View>
 
-          {/* Compact Switcher */}
-          <View style={styles.tabBar}>
-            <TouchableOpacity
-              style={[styles.tabItem, activeTab === 'client' && styles.tabItemActive]}
-              onPress={() => setActiveTab('client')}
-              activeOpacity={0.85}
-            >
-              <Text
-                style={[
-                  styles.tabText,
-                  activeTab === 'client' && styles.tabTextActive,
-                ]}
-              >
-                {t('welcome.clientTab') || 'Espace Client'}
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.tabItem, activeTab === 'agent' && styles.tabItemActive]}
-              onPress={() => setActiveTab('agent')}
-              activeOpacity={0.85}
-            >
-              <Text
-                style={[
-                  styles.tabText,
-                  activeTab === 'agent' && styles.tabTextActive,
-                ]}
-              >
-                {t('welcome.agentTab') || 'Espace Agent'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Compact Form */}
-          {activeTab === 'client' ? (
-            <View style={styles.form}>
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>
-                  {t('welcome.clientCodeLabel') || 'Code Client'}
-                </Text>
-                <View style={styles.inputWrapper}>
-                  <TextInput
-                    style={styles.input}
-                    value={searchId}
-                    onChangeText={setSearchId}
-                    placeholder="CUST-001"
-                    placeholderTextColor="#94A3B8"
-                    autoCapitalize="characters"
-                    autoCorrect={false}
-                    editable={!isLoading}
-                  />
-                  {searchId.length > 0 && (
-                    <TouchableOpacity
-                      onPress={() => setSearchId('')}
-                      style={styles.clearBtn}
-                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                    >
-                      <Text style={styles.clearText}>✕</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>
-                  {t('welcome.phoneLabel') || 'Téléphone'}
-                </Text>
-                <View style={styles.inputWrapper}>
-                  <TextInput
-                    style={styles.input}
-                    value={phoneNumber}
-                    onChangeText={setPhoneNumber}
-                    placeholder="66 00 00 00"
-                    placeholderTextColor="#94A3B8"
-                    keyboardType="phone-pad"
-                    editable={!isLoading}
-                  />
-                  {phoneNumber.length > 0 && (
-                    <TouchableOpacity
-                      onPress={() => setPhoneNumber('')}
-                      style={styles.clearBtn}
-                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                    >
-                      <Text style={styles.clearText}>✕</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              </View>
-
+            {/* Fully Rounded Switcher */}
+            <View style={styles.tabBar}>
               <TouchableOpacity
-                style={[styles.primaryButton, isLoading && styles.buttonDisabled]}
-                onPress={handleCustomerSearch}
-                disabled={isLoading}
+                style={[styles.tabItem, activeTab === 'client' && styles.tabItemActive]}
+                onPress={() => setActiveTab('client')}
                 activeOpacity={0.85}
               >
-                {isLoading ? (
-                  <ActivityIndicator color="#FFFFFF" size="small" />
-                ) : (
-                  <Text style={styles.primaryButtonText}>
-                    {t('welcome.searchBtn') || 'Consulter'}
-                  </Text>
-                )}
+                <Text
+                  style={[
+                    styles.tabText,
+                    activeTab === 'client' && styles.tabTextActive,
+                  ]}
+                >
+                  {t('welcome.clientTab') || 'Espace Client'}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.tabItem, activeTab === 'agent' && styles.tabItemActive]}
+                onPress={() => setActiveTab('agent')}
+                activeOpacity={0.85}
+              >
+                <Text
+                  style={[
+                    styles.tabText,
+                    activeTab === 'agent' && styles.tabTextActive,
+                  ]}
+                >
+                  {t('welcome.agentTab') || 'Espace Agent'}
+                </Text>
               </TouchableOpacity>
             </View>
-          ) : (
-            <View style={styles.form}>
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>{t('auth.email') || 'Email'}</Text>
-                <View style={styles.inputWrapper}>
-                  <TextInput
-                    style={styles.input}
-                    value={agentEmail}
-                    onChangeText={setAgentEmail}
-                    placeholder="agent@example.com"
-                    placeholderTextColor="#94A3B8"
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    editable={!isAgentLoggingIn}
-                  />
-                </View>
-              </View>
 
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>
-                  {t('auth.password') || 'Mot de passe'}
-                </Text>
-                <View style={styles.inputWrapper}>
-                  <TextInput
-                    style={styles.input}
-                    value={agentPassword}
-                    onChangeText={setAgentPassword}
-                    placeholder="••••••••"
-                    placeholderTextColor="#94A3B8"
-                    secureTextEntry={!showPassword}
-                    autoCapitalize="none"
-                    editable={!isAgentLoggingIn}
-                  />
-                  <TouchableOpacity
-                    style={styles.clearBtn}
-                    onPress={() => setShowPassword(!showPassword)}
-                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            {/* Modern Form Area */}
+            {activeTab === 'client' ? (
+              <View style={styles.form}>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>
+                    {t('welcome.clientCodeLabel') || 'Code Client'}
+                  </Text>
+                  <View
+                    style={[
+                      styles.inputWrapper,
+                      focusedField === 'clientCode' && styles.inputWrapperFocused,
+                    ]}
                   >
-                    <Text style={styles.eyeText}>{showPassword ? 'Masquer' : 'Afficher'}</Text>
-                  </TouchableOpacity>
+                    <TextInput
+                      style={styles.input}
+                      value={searchId}
+                      onChangeText={setSearchId}
+                      placeholder="CUST-001"
+                      placeholderTextColor="#94A3B8"
+                      autoCapitalize="characters"
+                      autoCorrect={false}
+                      editable={!isLoading}
+                      onFocus={() => setFocusedField('clientCode')}
+                      onBlur={() => setFocusedField(null)}
+                    />
+                    {searchId.length > 0 && (
+                      <TouchableOpacity
+                        onPress={() => setSearchId('')}
+                        style={styles.clearBtn}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      >
+                        <Text style={styles.clearText}>✕</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
                 </View>
-              </View>
 
-              <TouchableOpacity
-                style={[styles.primaryButton, isAgentLoggingIn && styles.buttonDisabled]}
-                onPress={handleAgentLogin}
-                disabled={isAgentLoggingIn}
-                activeOpacity={0.85}
-              >
-                {isAgentLoggingIn ? (
-                  <ActivityIndicator color="#FFFFFF" size="small" />
-                ) : (
-                  <Text style={styles.primaryButtonText}>
-                    {t('auth.loginBtn') || 'Se connecter'}
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>
+                    {t('welcome.phoneLabel') || 'Téléphone'}
                   </Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          )}
+                  <View
+                    style={[
+                      styles.inputWrapper,
+                      focusedField === 'phone' && styles.inputWrapperFocused,
+                    ]}
+                  >
+                    <TextInput
+                      style={styles.input}
+                      value={phoneNumber}
+                      onChangeText={setPhoneNumber}
+                      placeholder="66 00 00 00"
+                      placeholderTextColor="#94A3B8"
+                      keyboardType="phone-pad"
+                      editable={!isLoading}
+                      onFocus={() => setFocusedField('phone')}
+                      onBlur={() => setFocusedField(null)}
+                    />
+                    {phoneNumber.length > 0 && (
+                      <TouchableOpacity
+                        onPress={() => setPhoneNumber('')}
+                        style={styles.clearBtn}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      >
+                        <Text style={styles.clearText}>✕</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </View>
 
-          {/* Dynamic Auto-Incrementing Copyright */}
+                <TouchableOpacity
+                  style={[styles.primaryButton, isLoading && styles.buttonDisabled]}
+                  onPress={handleCustomerSearch}
+                  disabled={isLoading}
+                  activeOpacity={0.85}
+                >
+                  {isLoading ? (
+                    <ActivityIndicator color="#FFFFFF" size="small" />
+                  ) : (
+                    <View style={styles.buttonInner}>
+                      <Text style={styles.primaryButtonText}>
+                        {t('welcome.searchBtn') || 'Consulter mes factures'}
+                      </Text>
+                      <Text style={styles.buttonArrow}>→</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.helpLink}
+                  onPress={handleHelpPress}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.helpLinkText}>
+                    Où trouver mon code client ?
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.form}>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>{t('auth.email') || 'Email'}</Text>
+                  <View
+                    style={[
+                      styles.inputWrapper,
+                      focusedField === 'email' && styles.inputWrapperFocused,
+                    ]}
+                  >
+                    <TextInput
+                      style={styles.input}
+                      value={agentEmail}
+                      onChangeText={setAgentEmail}
+                      placeholder="agent@example.com"
+                      placeholderTextColor="#94A3B8"
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      editable={!isAgentLoggingIn}
+                      onFocus={() => setFocusedField('email')}
+                      onBlur={() => setFocusedField(null)}
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>
+                    {t('auth.password') || 'Mot de passe'}
+                  </Text>
+                  <View
+                    style={[
+                      styles.inputWrapper,
+                      focusedField === 'password' && styles.inputWrapperFocused,
+                    ]}
+                  >
+                    <TextInput
+                      style={styles.input}
+                      value={agentPassword}
+                      onChangeText={setAgentPassword}
+                      placeholder="••••••••"
+                      placeholderTextColor="#94A3B8"
+                      secureTextEntry={!showPassword}
+                      autoCapitalize="none"
+                      editable={!isAgentLoggingIn}
+                      onFocus={() => setFocusedField('password')}
+                      onBlur={() => setFocusedField(null)}
+                    />
+                    <TouchableOpacity
+                      style={styles.clearBtn}
+                      onPress={() => setShowPassword(!showPassword)}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                      <Text style={styles.eyeText}>{showPassword ? 'Masquer' : 'Afficher'}</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                <TouchableOpacity
+                  style={[styles.primaryButton, isAgentLoggingIn && styles.buttonDisabled]}
+                  onPress={handleAgentLogin}
+                  disabled={isAgentLoggingIn}
+                  activeOpacity={0.85}
+                >
+                  {isAgentLoggingIn ? (
+                    <ActivityIndicator color="#FFFFFF" size="small" />
+                  ) : (
+                    <View style={styles.buttonInner}>
+                      <Text style={styles.primaryButtonText}>
+                        {t('auth.loginBtn') || 'Se connecter'}
+                      </Text>
+                      <Text style={styles.buttonArrow}>→</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.helpLink}
+                  onPress={handleHelpPress}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.helpLinkText}>
+                    {t('auth.forgotPassword') || 'Mot de passe oublié ?'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+
+          {/* Dynamic Copyright Footer */}
           <View style={styles.footer}>
             <Text style={styles.footerText}>
               © {currentYear} STE - Tous droits réservés
@@ -318,43 +391,57 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 24,
-    paddingTop: 8,
-    paddingBottom: 20,
+    paddingTop: 16,
+    paddingBottom: 24,
     justifyContent: 'space-between',
   },
+  mainContent: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingVertical: 12,
+  },
 
-  /* Header */
-  header: {
-    alignItems: 'center',
-    marginTop: 4,
-    marginBottom: 16,
+  /* Refined Circular Logo Frame */
+  logoFrame: {
+    width: 82,
+    height: 82,
+    borderRadius: 9999,
+    alignSelf: 'center',
+    backgroundColor: '#FFFFFF',
+    marginBottom: 24,
+    overflow: 'hidden',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
   },
   logo: {
-    width: 80,
-    height: 80,
+    width: '100%',
+    height: '100%',
   },
 
-  /* Compact Rounded Segmented Tab Bar */
+  /* Clean Switcher */
   tabBar: {
     flexDirection: 'row',
     backgroundColor: '#F1F5F9',
-    borderRadius: 14,
-    padding: 3,
-    marginBottom: 20,
+    borderRadius: 9999,
+    padding: 4,
+    marginBottom: 24,
   },
   tabItem: {
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 12,
+    borderRadius: 9999,
   },
   tabItemActive: {
     backgroundColor: '#FFFFFF',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 3,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
     elevation: 2,
   },
   tabText: {
@@ -367,29 +454,39 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  /* Compact Form */
+  /* Modern Form */
   form: {
-    flex: 1,
+    width: '100%',
   },
   inputGroup: {
-    marginBottom: 14,
+    marginBottom: 16,
   },
   label: {
     fontSize: 12,
     fontWeight: '600',
     color: '#475569',
     marginBottom: 6,
-    marginLeft: 2,
+    marginLeft: 8,
   },
+  /* Soft filled background with zero harsh grey outline */
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F8FAFC',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    height: 46,
+    borderWidth: 1.5,
+    borderColor: '#F1F5F9',
+    borderRadius: 9999,
+    paddingHorizontal: 18,
+    height: 48,
+  },
+  inputWrapperFocused: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#2563EB',
+    shadowColor: '#2563EB',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 2,
   },
   input: {
     flex: 1,
@@ -412,16 +509,32 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  /* Compact Action Button */
+  /* Primary Button */
   primaryButton: {
     backgroundColor: '#2563EB',
-    borderRadius: 12,
-    height: 46,
+    borderRadius: 9999,
+    height: 48,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 6,
+    marginTop: 8,
+    shadowColor: '#2563EB',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.22,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  buttonInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   primaryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
+    marginRight: 6,
+  },
+  buttonArrow: {
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '700',
@@ -430,10 +543,23 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
 
+  /* Minimalist Help Link */
+  helpLink: {
+    alignSelf: 'center',
+    paddingVertical: 14,
+    marginTop: 6,
+  },
+  helpLinkText: {
+    fontSize: 12,
+    color: '#64748B',
+    fontWeight: '500',
+    textDecorationLine: 'underline',
+  },
+
   /* Footer */
   footer: {
     alignItems: 'center',
-    marginTop: 24,
+    paddingTop: 16,
   },
   footerText: {
     fontSize: 11,
