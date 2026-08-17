@@ -25,7 +25,8 @@ const LANGUAGE_DETECTOR = {
       }
       // Use device locale
       const deviceLocales = Localization.getLocales();
-      const bestLanguage = deviceLocales[0]?.languageCode || 'en';
+      const rawLang = deviceLocales[0]?.languageCode || 'en';
+      const bestLanguage = ['fr', 'ar', 'en'].includes(rawLang) ? rawLang : 'en';
       return callback(bestLanguage);
     } catch (error) {
       console.log('Error reading language', error);

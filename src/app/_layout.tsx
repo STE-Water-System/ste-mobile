@@ -19,7 +19,7 @@ const RootLayout = () => {
 
   return (
     <AuthProvider>
-      <StatusBar style="dark" backgroundColor="#FFFFFF" />
+      <StatusBar style="dark" />
       <Stack
         screenOptions={{
           headerShown: false,
