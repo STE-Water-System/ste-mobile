@@ -24,6 +24,7 @@ const ClientInputScreen = () => {
   const router = useRouter();
   const { t } = useTranslation();
   const { login } = useAuth();
+  const currentYear = new Date().getFullYear();
 
   const [activeTab, setActiveTab] = useState<'client' | 'agent'>('client');
 
@@ -120,23 +121,21 @@ const ClientInputScreen = () => {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Header & Logo */}
+          {/* Header with Official Emblem - no duplicate texts */}
           <View style={styles.header}>
             <Image
               source={require('../../assets/splash-icon.png')}
               style={styles.logo}
               resizeMode="contain"
             />
-            <Text style={styles.brandTitle}>STE</Text>
-            <Text style={styles.brandSubtitle}>Société Tchadienne des Eaux</Text>
           </View>
 
-          {/* Segmented Switcher */}
+          {/* Compact Rounded Switcher */}
           <View style={styles.tabBar}>
             <TouchableOpacity
               style={[styles.tabItem, activeTab === 'client' && styles.tabItemActive]}
               onPress={() => setActiveTab('client')}
-              activeOpacity={0.8}
+              activeOpacity={0.85}
             >
               <Text
                 style={[
@@ -151,7 +150,7 @@ const ClientInputScreen = () => {
             <TouchableOpacity
               style={[styles.tabItem, activeTab === 'agent' && styles.tabItemActive]}
               onPress={() => setActiveTab('agent')}
-              activeOpacity={0.8}
+              activeOpacity={0.85}
             >
               <Text
                 style={[
@@ -164,7 +163,7 @@ const ClientInputScreen = () => {
             </TouchableOpacity>
           </View>
 
-          {/* Form Content */}
+          {/* Fully Rounded Form Area */}
           {activeTab === 'client' ? (
             <View style={styles.form}>
               <View style={styles.inputGroup}>
@@ -186,7 +185,7 @@ const ClientInputScreen = () => {
                     <TouchableOpacity
                       onPress={() => setSearchId('')}
                       style={styles.clearBtn}
-                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                     >
                       <Text style={styles.clearText}>✕</Text>
                     </TouchableOpacity>
@@ -212,7 +211,7 @@ const ClientInputScreen = () => {
                     <TouchableOpacity
                       onPress={() => setPhoneNumber('')}
                       style={styles.clearBtn}
-                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                     >
                       <Text style={styles.clearText}>✕</Text>
                     </TouchableOpacity>
@@ -230,7 +229,7 @@ const ClientInputScreen = () => {
                   <ActivityIndicator color="#FFFFFF" size="small" />
                 ) : (
                   <Text style={styles.primaryButtonText}>
-                    {t('welcome.searchBtn') || 'Consulter'}
+                    {t('welcome.searchBtn') || 'Consulter mes factures'}
                   </Text>
                 )}
               </TouchableOpacity>
@@ -272,9 +271,9 @@ const ClientInputScreen = () => {
                   <TouchableOpacity
                     style={styles.clearBtn}
                     onPress={() => setShowPassword(!showPassword)}
-                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                   >
-                    <Text style={styles.eyeText}>{showPassword ? 'Hide' : 'Show'}</Text>
+                    <Text style={styles.eyeText}>{showPassword ? 'Masquer' : 'Afficher'}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -296,9 +295,11 @@ const ClientInputScreen = () => {
             </View>
           )}
 
-          {/* Footer */}
+          {/* Dynamic Auto-Incrementing Copyright */}
           <View style={styles.footer}>
-            <Text style={styles.footerText}>© STE</Text>
+            <Text style={styles.footerText}>
+              © {currentYear} STE - Tous droits réservés
+            </Text>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -317,7 +318,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 24,
-    paddingTop: 16,
+    paddingTop: 12,
     paddingBottom: 24,
     justifyContent: 'space-between',
   },
@@ -325,48 +326,35 @@ const styles = StyleSheet.create({
   /* Header */
   header: {
     alignItems: 'center',
-    marginTop: 12,
-    marginBottom: 28,
+    marginTop: 8,
+    marginBottom: 20,
   },
   logo: {
-    width: 68,
-    height: 68,
-    marginBottom: 12,
-  },
-  brandTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#0F172A',
-    letterSpacing: 2,
-  },
-  brandSubtitle: {
-    fontSize: 13,
-    color: '#64748B',
-    marginTop: 2,
-    fontWeight: '500',
+    width: 96,
+    height: 96,
   },
 
-  /* Segmented Tab Bar */
+  /* Fully Rounded Segmented Tab Bar */
   tabBar: {
     flexDirection: 'row',
     backgroundColor: '#F1F5F9',
-    borderRadius: 14,
+    borderRadius: 9999,
     padding: 4,
-    marginBottom: 28,
+    marginBottom: 24,
   },
   tabItem: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 11,
+    borderRadius: 9999,
   },
   tabItemActive: {
     backgroundColor: '#FFFFFF',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.08,
-    shadowRadius: 3,
+    shadowRadius: 4,
     elevation: 2,
   },
   tabText: {
@@ -379,18 +367,19 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  /* Form */
+  /* Compact Form */
   form: {
     flex: 1,
   },
   inputGroup: {
-    marginBottom: 18,
+    marginBottom: 16,
   },
   label: {
     fontSize: 13,
     fontWeight: '600',
     color: '#334155',
     marginBottom: 8,
+    marginLeft: 4,
   },
   inputWrapper: {
     flexDirection: 'row',
@@ -398,9 +387,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8FAFC',
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    height: 50,
+    borderRadius: 9999,
+    paddingHorizontal: 18,
+    height: 52,
   },
   input: {
     flex: 1,
@@ -410,7 +399,7 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
   },
   clearBtn: {
-    paddingHorizontal: 6,
+    paddingHorizontal: 4,
   },
   clearText: {
     fontSize: 13,
@@ -419,18 +408,23 @@ const styles = StyleSheet.create({
   },
   eyeText: {
     fontSize: 12,
-    color: '#64748B',
+    color: '#2563EB',
     fontWeight: '600',
   },
 
-  /* Action Button */
+  /* Fully Rounded Action Button */
   primaryButton: {
     backgroundColor: '#2563EB',
-    borderRadius: 14,
-    height: 50,
+    borderRadius: 9999,
+    height: 52,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 8,
+    shadowColor: '#2563EB',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 3,
   },
   primaryButtonText: {
     color: '#FFFFFF',
@@ -444,7 +438,7 @@ const styles = StyleSheet.create({
   /* Footer */
   footer: {
     alignItems: 'center',
-    marginTop: 32,
+    marginTop: 28,
   },
   footerText: {
     fontSize: 12,
