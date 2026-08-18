@@ -1,63 +1,42 @@
-import React, { useEffect } from 'react';
-import { View, Image, StyleSheet, Animated } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useAuth } from '../contexts/AuthContext';
+import React from 'react';
+import { Image, StyleSheet, View } from 'react-native';
+import { Redirect } from 'expo-router';
 
-const SplashScreen = () => {
-  const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuth();
-  const fadeAnim = new Animated.Value(0);
+import { useAuthStore } from '../store/authStore';
+import { colors, radius, shadow } from '../theme';
 
-  useEffect(() => {
-    // Start fade-in animation
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 800,
-      useNativeDriver: true,
-    }).start();
+/** Entry gate: shows the mark while the stored session loads, then routes by role. */
+const Entry = () => {
+  const hydrated = useAuthStore((state) => state.hydrated);
+  const session = useAuthStore((state) => state.session);
 
-    // Wait for auth to load, then navigate
-    const timer = setTimeout(() => {
-      if (!isLoading) {
-        if (isAuthenticated) {
-          router.replace('/agent-dashboard');
-        } else {
-          router.replace('/client-input');
-        }
-      }
-    }, 2000);
+  if (!hydrated) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.logoFrame}>
+          <Image source={require('../../assets/splash-icon.png')} style={styles.logo} resizeMode="contain" />
+        </View>
+      </View>
+    );
+  }
 
-    return () => clearTimeout(timer);
-  }, [isLoading, isAuthenticated]);
-
-  return (
-    <View style={styles.container}>
-      <Animated.View style={[styles.logoContainer, { opacity: fadeAnim }]}>
-        <Image
-          source={require('../../assets/splash-icon.png')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-      </Animated.View>
-    </View>
-  );
+  if (session?.kind === 'agent') return <Redirect href="/(agent)/reading" />;
+  if (session?.kind === 'client') return <Redirect href="/(client)/bills" />;
+  return <Redirect href="/(auth)/login" />;
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
+  container: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' },
+  logoFrame: {
+    width: 96,
+    height: 96,
+    borderRadius: radius.pill,
+    backgroundColor: colors.white,
     alignItems: 'center',
-  },
-  logoContainer: {
-    alignItems: 'center',
     justifyContent: 'center',
+    ...shadow.soft,
   },
-  logo: {
-    width: 120,
-    height: 120,
-  },
+  logo: { width: 60, height: 60 },
 });
 
-export default SplashScreen;
+export default Entry;

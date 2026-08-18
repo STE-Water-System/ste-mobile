@@ -1,9 +1,24 @@
+import React, { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
-import React from 'react';
-import '../i18n'; // Initialize i18n
 import { StatusBar } from 'expo-status-bar';
-import { useFonts, Inter_400Regular, Inter_600SemiBold, Inter_700Bold, Inter_800ExtraBold } from '@expo-google-fonts/inter';
-import { AuthProvider } from '../contexts/AuthContext';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {
+  useFonts,
+  Inter_400Regular,
+  Inter_600SemiBold,
+  Inter_700Bold,
+  Inter_800ExtraBold,
+} from '@expo-google-fonts/inter';
+
+import { initI18n } from '../i18n';
+import { useAuthStore } from '../store/authStore';
+import { colors } from '../theme';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { retry: 1, staleTime: 30_000, refetchOnWindowFocus: false },
+  },
+});
 
 const RootLayout = () => {
   const [fontsLoaded] = useFonts({
@@ -12,25 +27,33 @@ const RootLayout = () => {
     Inter_700Bold,
     Inter_800ExtraBold,
   });
+  const [ready, setReady] = useState(false);
+  const hydrate = useAuthStore((state) => state.hydrate);
 
-  if (!fontsLoaded) {
-    return null;
-  }
+  useEffect(() => {
+    // i18n sets the native layout direction, so it has to settle before anything renders.
+    (async () => {
+      try {
+        await initI18n();
+      } finally {
+        setReady(true);
+      }
+    })();
+    hydrate();
+  }, [hydrate]);
+
+  if (!fontsLoaded || !ready) return null;
 
   return (
-    <AuthProvider>
+    <QueryClientProvider client={queryClient}>
       <StatusBar style="dark" />
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: '#F8FAFC' },
+          contentStyle: { backgroundColor: colors.background },
         }}
-      >
-        <Stack.Screen name="index" />
-        <Stack.Screen name="client-input" />
-        <Stack.Screen name="billing-info" />
-      </Stack>
-    </AuthProvider>
+      />
+    </QueryClientProvider>
   );
 };
 
