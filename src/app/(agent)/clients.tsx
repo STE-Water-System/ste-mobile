@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 
@@ -31,6 +32,7 @@ import { spacing, textStart, type } from '../../theme';
 /** Client lookup: is this customer up to date on their bills? */
 const ClientsScreen = () => {
   const { t } = useTranslation();
+  const router = useRouter();
   const [code, setCode] = useState('');
   const [query, setQuery] = useState('');
 
@@ -46,6 +48,7 @@ const ClientsScreen = () => {
   });
 
   const customer = lookup.data?.customer;
+  const fullName = `${customer?.firstName || ''} ${customer?.lastName || ''}`.trim();
   const bills = lookup.data?.bills ?? [];
   const unpaid = bills.filter((bill: any) => !isBillPaid(bill));
   const due = unpaid.reduce((total: number, bill: any) => total + billBalance(bill), 0);
@@ -96,10 +99,7 @@ const ClientsScreen = () => {
           </View>
 
           <Card>
-            <Line
-              label={t('agent.client')}
-              value={`${customer.firstName || ''} ${customer.lastName || ''}`.trim() || '—'}
-            />
+            <Line label={t('agent.client')} value={fullName || '—'} />
             <Divider />
             <Line label={t('auth.clientCode')} value={customer.customerCode || '—'} />
             <Divider />
@@ -111,6 +111,18 @@ const ClientsScreen = () => {
               </>
             )}
           </Card>
+
+          <Button
+            label={t('complaints.new')}
+            variant="ghost"
+            style={styles.complaint}
+            onPress={() =>
+              router.push({
+                pathname: '/complaint',
+                params: { customerId: String(customer.customerId), name: fullName },
+              })
+            }
+          />
 
           <Text style={[type.label, textStart(), styles.sectionTitle]}>{t('agent.bills')}</Text>
 
@@ -143,6 +155,7 @@ const ClientsScreen = () => {
 const styles = StyleSheet.create({
   summary: { paddingVertical: spacing(5), gap: spacing(1), alignItems: 'flex-start' },
   amount: { marginBottom: spacing(2) },
+  complaint: { marginTop: spacing(3) },
   sectionTitle: { marginTop: spacing(6), marginBottom: spacing(2), marginStart: spacing(2) },
 
   billRow: {

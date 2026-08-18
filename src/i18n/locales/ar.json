@@ -103,7 +103,6 @@
   "client": {
     "tabBills": "الفواتير",
     "tabReadings": "القراءات",
-    "tabComplaints": "الشكاوى",
     "greeting": "مرحباً",
     "balanceDue": "المبلغ المستحق",
     "upToDate": "الحساب مسدَّد",
@@ -133,22 +132,19 @@
     "RE_SUBMITED": "أُعيد إرسالها"
   },
   "complaints": {
-    "title": "الشكاوى",
     "new": "شكوى جديدة",
-    "type": "النوع",
     "subject": "الموضوع",
-    "description": "الوصف",
     "descriptionPlaceholder": "صف المشكلة",
-    "priority": "الأولوية",
     "submit": "إرسال",
     "sent": "تم إرسال الشكوى",
     "missingFields": "أدخل الموضوع والوصف.",
-    "none": "لا توجد شكاوى.",
     "type_Technical": "تقني",
     "type_Billing": "الفوترة",
+    "type_Maintenance": "صيانة",
     "type_Other": "أخرى",
     "priority_Low": "منخفضة",
     "priority_Medium": "متوسطة",
-    "priority_High": "عالية"
+    "priority_High": "عالية",
+    "priority_Urgent": "عاجلة"
   }
 }

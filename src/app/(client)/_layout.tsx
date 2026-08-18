@@ -16,7 +16,6 @@ const ClientLayout = () => {
     <Tabs screenOptions={{ headerShown: false }} tabBar={(props) => <TabBar {...props} />}>
       <Tabs.Screen name="bills" options={{ title: t('client.tabBills') }} />
       <Tabs.Screen name="readings" options={{ title: t('client.tabReadings') }} />
-      <Tabs.Screen name="complaints" options={{ title: t('client.tabComplaints') }} />
     </Tabs>
   );
 };

@@ -100,7 +100,6 @@
   "client": {
     "tabBills": "Factures",
     "tabReadings": "Relevés",
-    "tabComplaints": "Réclamations",
     "greeting": "Bonjour",
     "balanceDue": "Solde à payer",
     "upToDate": "Compte à jour",
@@ -130,22 +129,19 @@
     "RE_SUBMITED": "Renvoyé"
   },
   "complaints": {
-    "title": "Réclamations",
     "new": "Nouvelle réclamation",
-    "type": "Type",
     "subject": "Objet",
-    "description": "Description",
     "descriptionPlaceholder": "Décrivez le problème",
-    "priority": "Priorité",
     "submit": "Envoyer",
     "sent": "Réclamation envoyée",
     "missingFields": "Renseignez l'objet et la description.",
-    "none": "Aucune réclamation.",
     "type_Technical": "Technique",
     "type_Billing": "Facturation",
+    "type_Maintenance": "Entretien",
     "type_Other": "Autre",
     "priority_Low": "Basse",
     "priority_Medium": "Moyenne",
-    "priority_High": "Haute"
+    "priority_High": "Haute",
+    "priority_Urgent": "Urgente"
   }
 }

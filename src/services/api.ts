@@ -672,31 +672,42 @@ export const clientApi = {
     const response = await apiRequest(`/client/consumption/${meterId}`, { method: 'GET' });
     return sortByDateDesc(normalizeListResponse(response).items);
   },
+};
 
+/** Categories `POST /api/complaints` accepts; the backend maps them to complainType. */
+export const COMPLAINT_CATEGORIES = ['Technical', 'Billing', 'Maintenance', 'Other'] as const;
+export type ComplaintCategory = (typeof COMPLAINT_CATEGORIES)[number];
+
+export const COMPLAINT_PRIORITIES = ['Low', 'Medium', 'High', 'Urgent'] as const;
+export type ComplaintPriority = (typeof COMPLAINT_PRIORITIES)[number];
+
+export const complaintsApi = {
   /**
-   * POST /api/client/complaints
+   * POST /api/complaints — requires a JWT, so this is an agent-only action.
    *
-   * The route validates `title` while the Complain model requires `subject`, so
-   * both are sent. Note the handler hardcodes status 'PENDING', which is not in
-   * the model's enum (Open|In_Progress|Resolved|Closed) — until that is fixed
-   * server-side this call fails with a 500.
+   * The unauthenticated twin at /api/client/complaints cannot be used: it
+   * hardcodes `status: 'PENDING'` after spreading the body, and the column is
+   * ENUM('Open','In_Progress','Resolved','Closed'), so every request fails with
+   * a 500 no matter what is sent.
+   *
+   * `category` is what the validator checks; the handler translates it into the
+   * model's `complainType`. `description` is optional to the validator but NOT
+   * NULL in the model, so it always has to be filled in.
    */
-  createComplaint: async (data: {
+  create: async (data: {
     customerId: number;
     subject: string;
     description: string;
-    complainType?: 'Technical' | 'Billing' | 'Service' | 'Other';
-    priority?: 'Low' | 'Medium' | 'High' | 'Critical';
+    category: ComplaintCategory;
+    priority?: ComplaintPriority;
   }) => {
-    return await apiRequest('/client/complaints', {
+    return await apiRequest('/complaints', {
       method: 'POST',
       body: JSON.stringify({
         customerId: data.customerId,
-        title: data.subject,
         subject: data.subject,
         description: data.description,
-        complainType: data.complainType || 'Other',
-        type: data.complainType || 'Other',
+        category: data.category,
         priority: data.priority || 'Medium',
       }),
     });
