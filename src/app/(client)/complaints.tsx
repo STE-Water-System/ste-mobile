@@ -1,23 +1,20 @@
 import React, { useState } from 'react';
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Alert, StyleSheet, View } from 'react-native';
 import { useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 
-import { Button, Card, Field, Header, Notice, Screen, Segmented } from '../components/ui';
-import { complaintsApi, type ComplaintCategory, type ComplaintPriority } from '../services/api';
-import { arrowBack, colors, radius, spacing } from '../theme';
+import { Button, Card, Field, Header, Notice, Screen, Segmented } from '../../components/ui';
+import {
+  complaintsApi,
+  type ComplaintCategory,
+  type ComplaintPriority,
+} from '../../services/api';
+import { spacing } from '../../theme';
+import { useCustomer } from '../../store/authStore';
 
-/**
- * POST /api/complaints — filed by the agent for a customer they just looked up.
- * The customer-facing route is unusable (see complaintsApi.create), so this is
- * the only way a complaint reaches the backend from the app.
- */
-const ComplaintScreen = () => {
+const ComplaintsScreen = () => {
   const { t } = useTranslation();
-  const router = useRouter();
-  const params = useLocalSearchParams<{ customerId?: string; name?: string }>();
-  const customerId = Number(params.customerId);
+  const customer = useCustomer();
 
   const [category, setCategory] = useState<ComplaintCategory>('Technical');
   const [priority, setPriority] = useState<ComplaintPriority>('Medium');
@@ -28,20 +25,25 @@ const ComplaintScreen = () => {
   const create = useMutation({
     mutationFn: () =>
       complaintsApi.create({
-        customerId,
+        customerId: customer!.customerId,
         subject: subject.trim(),
         description: description.trim(),
         category,
         priority,
       }),
     onSuccess: () => {
-      Alert.alert('', t('complaints.sent'), [{ text: 'OK', onPress: () => router.back() }]);
+      setSubject('');
+      setDescription('');
+      Alert.alert('', t('complaints.sent'));
     },
     onError: (err: any) => {
-      // The route declares requireRole([ADMIN, VALIDATOR, OPERATOR]) — an AGENT
-      // only gets through because the check is currently disabled server-side.
-      // Say so plainly if it is ever turned back on.
-      setError(err?.isForbidden ? t('complaints.forbidden') : err?.message || t('auth.failed'));
+      // The route forces an invalid `status` on insert, so every submission is
+      // rejected until that is corrected server-side. Raw SQL text would mean
+      // nothing to a customer.
+      const message = String(err?.message || '');
+      setError(
+        /truncated|status/i.test(message) ? t('complaints.unavailable') : message || t('auth.failed')
+      );
     },
   });
 
@@ -57,15 +59,7 @@ const ComplaintScreen = () => {
 
   return (
     <Screen scroll>
-      <Header
-        title={t('complaints.new')}
-        subtitle={params.name}
-        action={
-          <TouchableOpacity style={styles.back} onPress={() => router.back()} hitSlop={8}>
-            <Text style={styles.backLabel}>{arrowBack()}</Text>
-          </TouchableOpacity>
-        }
-      />
+      <Header title={t('client.tabComplaints')} subtitle={t('complaints.subtitle')} />
 
       <Card>
         <View style={styles.group}>
@@ -75,7 +69,7 @@ const ComplaintScreen = () => {
             options={[
               { value: 'Technical', label: t('complaints.type_Technical') },
               { value: 'Billing', label: t('complaints.type_Billing') },
-              { value: 'Maintenance', label: t('complaints.type_Maintenance') },
+              { value: 'Service', label: t('complaints.type_Service') },
               { value: 'Other', label: t('complaints.type_Other') },
             ]}
           />
@@ -89,7 +83,7 @@ const ComplaintScreen = () => {
               { value: 'Low', label: t('complaints.priority_Low') },
               { value: 'Medium', label: t('complaints.priority_Medium') },
               { value: 'High', label: t('complaints.priority_High') },
-              { value: 'Urgent', label: t('complaints.priority_Urgent') },
+              { value: 'Critical', label: t('complaints.priority_Critical') },
             ]}
           />
         </View>
@@ -114,7 +108,7 @@ const ComplaintScreen = () => {
         label={t('complaints.submit')}
         onPress={submit}
         loading={create.isPending}
-        disabled={!Number.isFinite(customerId) || customerId <= 0}
+        disabled={!customer}
         style={styles.submit}
       />
     </Screen>
@@ -122,18 +116,8 @@ const ComplaintScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  back: {
-    width: 36,
-    height: 36,
-    borderRadius: radius.pill,
-    backgroundColor: colors.surfaceAlt,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  backLabel: { fontSize: 16, color: colors.text },
-
   group: { marginBottom: spacing(3) },
   submit: { marginTop: spacing(5) },
 });
 
-export default ComplaintScreen;
+export default ComplaintsScreen;

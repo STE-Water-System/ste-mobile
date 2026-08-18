@@ -5,7 +5,6 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 
 import { Badge, Card, Divider, Empty, Header, Loading, Notice, Segmented } from '../../components/ui';
-import { SettingsButton } from '../../components/SettingsButton';
 import { billBalance, clientApi, formatCurrency, isBillPaid } from '../../services/api';
 import { billLabel, billTone, formatPeriod } from '../../lib/format';
 import { colors, spacing, textStart, type } from '../../theme';
@@ -43,7 +42,6 @@ const BillsScreen = () => {
         <Header
           title={t('client.tabBills')}
           subtitle={`${customer?.firstName || ''} ${customer?.lastName || ''}`.trim()}
-          action={<SettingsButton />}
         />
 
         <View style={styles.summary}>

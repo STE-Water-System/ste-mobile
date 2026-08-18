@@ -4,6 +4,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors, radius, shadow, spacing } from '../theme';
 
+type IconRenderer = (props: { color: string; size: number; focused: boolean }) => React.ReactNode;
+
 /**
  * Only the parts of the navigator we read. expo-router 57 vendors its own copy
  * of the navigation types, so describing the shape here avoids depending on
@@ -11,7 +13,7 @@ import { colors, radius, shadow, spacing } from '../theme';
  */
 interface TabBarProps {
   state: { index: number; routes: { key: string; name: string }[] };
-  descriptors: Record<string, { options: { title?: string } }>;
+  descriptors: Record<string, { options: { title?: string; tabBarIcon?: IconRenderer } }>;
   navigation: {
     emit: (event: { type: 'tabPress'; target: string; canPreventDefault: true }) => {
       defaultPrevented: boolean;
@@ -20,10 +22,7 @@ interface TabBarProps {
   };
 }
 
-/**
- * Text-only pill tab bar, matching the segmented control on the login screen.
- * Labels carry the meaning here, so no icons are needed.
- */
+/** Rounded bottom bar: icon over label, the active tab lifted onto a white pill. */
 export const TabBar = ({ state, descriptors, navigation }: TabBarProps) => {
   const insets = useSafeAreaInsets();
 
@@ -34,6 +33,7 @@ export const TabBar = ({ state, descriptors, navigation }: TabBarProps) => {
           const focused = state.index === index;
           const { options } = descriptors[route.key];
           const label = options.title ?? route.name;
+          const tint = focused ? colors.primary : colors.textSubtle;
 
           const onPress = () => {
             const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
@@ -49,7 +49,8 @@ export const TabBar = ({ state, descriptors, navigation }: TabBarProps) => {
               onPress={onPress}
               activeOpacity={0.85}
             >
-              <Text style={[styles.label, focused && styles.labelActive]} numberOfLines={1}>
+              {options.tabBarIcon?.({ color: tint, size: 20, focused })}
+              <Text style={[styles.label, { color: tint }, focused && styles.labelActive]} numberOfLines={1}>
                 {label}
               </Text>
             </TouchableOpacity>
@@ -70,15 +71,15 @@ const styles = StyleSheet.create({
   },
   tab: {
     flex: 1,
-    height: 40,
+    paddingVertical: spacing(2),
     borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: spacing(2),
+    gap: 2,
   },
   tabActive: { backgroundColor: colors.white, ...shadow.soft },
-  label: { fontSize: 13, fontWeight: '600', color: colors.textSubtle },
-  labelActive: { color: colors.text, fontWeight: '700' },
+  label: { fontSize: 11, fontWeight: '600' },
+  labelActive: { fontWeight: '700' },
 });
 
 export default TabBar;

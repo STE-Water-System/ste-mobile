@@ -162,15 +162,13 @@ const LoginScreen = () => {
               style={styles.submit}
             />
 
-            <TextLink
-              label={space === 'client' ? t('auth.helpLink') : t('auth.forgotLink')}
-              onPress={() =>
-                Alert.alert(
-                  space === 'client' ? t('auth.helpTitle') : t('auth.forgotTitle'),
-                  space === 'client' ? t('auth.helpBody') : t('auth.forgotBody')
-                )
-              }
-            />
+            {/* Agents recover their password through the back-office, not here. */}
+            {space === 'client' && (
+              <TextLink
+                label={t('auth.helpLink')}
+                onPress={() => Alert.alert(t('auth.helpTitle'), t('auth.helpBody'))}
+              />
+            )}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

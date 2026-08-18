@@ -39,12 +39,8 @@
     "footer": "© {{year}} STE"
   },
   "settings": {
-    "title": "Settings",
-    "language": "Language",
     "logout": "Sign out",
-    "logoutConfirm": "Do you want to sign out?",
-    "restartTitle": "Restart",
-    "restartBody": "The app will restart to apply the language."
+    "logoutConfirm": "Do you want to sign out?"
   },
   "agent": {
     "tabReading": "Reading",
@@ -95,7 +91,9 @@
     "access": "Access",
     "accessed": "Accessible",
     "duplicateOther": "A reading already exists for this meter this month, possibly from another agent.",
-    "overdue_one": "{{count}} unpaid bill"
+    "overdue_one": "{{count}} unpaid bill",
+    "tabProfile": "Profile",
+    "role": "Role"
   },
   "client": {
     "tabBills": "Bills",
@@ -113,7 +111,9 @@
     "consumption": "Consumption",
     "index": "Index",
     "invoice": "Bill {{number}}",
-    "date": "Date"
+    "date": "Date",
+    "tabComplaints": "Complaints",
+    "tabProfile": "Profile"
   },
   "bill": {
     "PAID": "Paid",
@@ -129,20 +129,20 @@
     "RE_SUBMITED": "Resent"
   },
   "complaints": {
-    "new": "New complaint",
     "subject": "Subject",
     "descriptionPlaceholder": "Describe the issue",
     "submit": "Send",
     "sent": "Complaint sent",
     "missingFields": "Enter a subject and a description.",
-    "forbidden": "This account is not allowed to file complaints.",
     "type_Technical": "Technical",
     "type_Billing": "Billing",
-    "type_Maintenance": "Maintenance",
     "type_Other": "Other",
     "priority_Low": "Low",
     "priority_Medium": "Medium",
     "priority_High": "High",
-    "priority_Urgent": "Urgent"
+    "subtitle": "Report a problem to STE",
+    "type_Service": "Service",
+    "priority_Critical": "Critical",
+    "unavailable": "Filing complaints is temporarily unavailable. Please try again later."
   }
 }

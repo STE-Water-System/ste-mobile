@@ -39,12 +39,8 @@
     "footer": "© {{year}} STE"
   },
   "settings": {
-    "title": "الإعدادات",
-    "language": "اللغة",
     "logout": "تسجيل الخروج",
-    "logoutConfirm": "هل تريد تسجيل الخروج؟",
-    "restartTitle": "إعادة التشغيل",
-    "restartBody": "سيُعاد تشغيل التطبيق لتطبيق اللغة."
+    "logoutConfirm": "هل تريد تسجيل الخروج؟"
   },
   "agent": {
     "tabReading": "القراءة",
@@ -98,7 +94,9 @@
     "overdue_one": "فاتورة واحدة غير مدفوعة",
     "overdue_two": "فاتورتان غير مدفوعتان",
     "overdue_few": "{{count}} فواتير غير مدفوعة",
-    "overdue_many": "{{count}} فاتورة غير مدفوعة"
+    "overdue_many": "{{count}} فاتورة غير مدفوعة",
+    "tabProfile": "الملف الشخصي",
+    "role": "الدور"
   },
   "client": {
     "tabBills": "الفواتير",
@@ -116,7 +114,9 @@
     "consumption": "الاستهلاك",
     "index": "المؤشر",
     "invoice": "فاتورة {{number}}",
-    "date": "التاريخ"
+    "date": "التاريخ",
+    "tabComplaints": "الشكاوى",
+    "tabProfile": "الملف الشخصي"
   },
   "bill": {
     "PAID": "مدفوعة",
@@ -132,20 +132,20 @@
     "RE_SUBMITED": "أُعيد إرسالها"
   },
   "complaints": {
-    "new": "شكوى جديدة",
     "subject": "الموضوع",
     "descriptionPlaceholder": "صف المشكلة",
     "submit": "إرسال",
     "sent": "تم إرسال الشكوى",
     "missingFields": "أدخل الموضوع والوصف.",
-    "forbidden": "هذا الحساب غير مخوّل بتسجيل شكوى.",
     "type_Technical": "تقني",
     "type_Billing": "الفوترة",
-    "type_Maintenance": "صيانة",
     "type_Other": "أخرى",
     "priority_Low": "منخفضة",
     "priority_Medium": "متوسطة",
     "priority_High": "عالية",
-    "priority_Urgent": "عاجلة"
+    "subtitle": "أبلغ عن مشكلة إلى الشركة",
+    "type_Service": "خدمة",
+    "priority_Critical": "حرجة",
+    "unavailable": "تسجيل الشكاوى غير متاح مؤقتاً. حاول لاحقاً."
   }
 }

@@ -20,7 +20,6 @@ import {
   TextLink,
   type Tone,
 } from '../../components/ui';
-import { SettingsButton } from '../../components/SettingsButton';
 import {
   ACCESS_REASONS,
   READING_STATUS,
@@ -286,7 +285,7 @@ const ReadingScreen = () => {
 
   return (
     <Screen scroll>
-      <Header title={t('agent.tabReading')} action={<SettingsButton />} />
+      <Header title={t('agent.tabReading')} />
 
       {!customer ? (
         <>

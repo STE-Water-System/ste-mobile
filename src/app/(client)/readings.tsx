@@ -5,7 +5,6 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 
 import { Badge, Card, Divider, Empty, Header, Loading, Notice } from '../../components/ui';
-import { SettingsButton } from '../../components/SettingsButton';
 import { clientApi } from '../../services/api';
 import { formatDate, readingLabel, readingTone } from '../../lib/format';
 import { colors, radius, spacing, textStart, type } from '../../theme';
@@ -39,7 +38,6 @@ const ReadingsScreen = () => {
         <Header
           title={t('client.tabReadings')}
           subtitle={meter?.meterNumber}
-          action={<SettingsButton />}
         />
 
         {meters.length > 1 && (

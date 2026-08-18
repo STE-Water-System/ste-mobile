@@ -39,12 +39,8 @@
     "footer": "© {{year}} STE"
   },
   "settings": {
-    "title": "Réglages",
-    "language": "Langue",
     "logout": "Déconnexion",
-    "logoutConfirm": "Voulez-vous vous déconnecter ?",
-    "restartTitle": "Redémarrage",
-    "restartBody": "L'application va redémarrer pour appliquer la langue."
+    "logoutConfirm": "Voulez-vous vous déconnecter ?"
   },
   "agent": {
     "tabReading": "Relevé",
@@ -95,7 +91,9 @@
     "balance": "Solde",
     "upToDate": "À jour",
     "overdue_one": "{{count}} facture impayée",
-    "overdue_other": "{{count}} factures impayées"
+    "overdue_other": "{{count}} factures impayées",
+    "tabProfile": "Profil",
+    "role": "Rôle"
   },
   "client": {
     "tabBills": "Factures",
@@ -113,7 +111,9 @@
     "amount": "Montant",
     "consumption": "Consommation",
     "index": "Index",
-    "invoice": "Facture {{number}}"
+    "invoice": "Facture {{number}}",
+    "tabComplaints": "Réclamations",
+    "tabProfile": "Profil"
   },
   "bill": {
     "PAID": "Payée",
@@ -129,20 +129,20 @@
     "RE_SUBMITED": "Renvoyé"
   },
   "complaints": {
-    "new": "Nouvelle réclamation",
     "subject": "Objet",
     "descriptionPlaceholder": "Décrivez le problème",
     "submit": "Envoyer",
     "sent": "Réclamation envoyée",
     "missingFields": "Renseignez l'objet et la description.",
-    "forbidden": "Ce compte n'a pas l'autorisation d'enregistrer une réclamation.",
     "type_Technical": "Technique",
     "type_Billing": "Facturation",
-    "type_Maintenance": "Entretien",
     "type_Other": "Autre",
     "priority_Low": "Basse",
     "priority_Medium": "Moyenne",
     "priority_High": "Haute",
-    "priority_Urgent": "Urgente"
+    "subtitle": "Signalez un problème à la STE",
+    "type_Service": "Service",
+    "priority_Critical": "Critique",
+    "unavailable": "L'enregistrement des réclamations est momentanément indisponible. Réessayez plus tard."
   }
 }

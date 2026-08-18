@@ -674,25 +674,30 @@ export const clientApi = {
   },
 };
 
-/** Categories `POST /api/complaints` accepts; the backend maps them to complainType. */
-export const COMPLAINT_CATEGORIES = ['Technical', 'Billing', 'Maintenance', 'Other'] as const;
+/** The `complainType` column is an ENUM; the client route writes it verbatim. */
+export const COMPLAINT_CATEGORIES = ['Technical', 'Billing', 'Service', 'Other'] as const;
 export type ComplaintCategory = (typeof COMPLAINT_CATEGORIES)[number];
 
-export const COMPLAINT_PRIORITIES = ['Low', 'Medium', 'High', 'Urgent'] as const;
+/** Likewise `priority` — note it is Critical here, not Urgent. */
+export const COMPLAINT_PRIORITIES = ['Low', 'Medium', 'High', 'Critical'] as const;
 export type ComplaintPriority = (typeof COMPLAINT_PRIORITIES)[number];
 
 export const complaintsApi = {
   /**
-   * POST /api/complaints — requires a JWT, so this is an agent-only action.
+   * POST /api/client/complaints — no JWT, because customers never get one:
+   * verify-customer returns the record alone, so the protected /api/complaints
+   * route is out of reach for them.
    *
-   * The unauthenticated twin at /api/client/complaints cannot be used: it
-   * hardcodes `status: 'PENDING'` after spreading the body, and the column is
-   * ENUM('Open','In_Progress','Resolved','Closed'), so every request fails with
-   * a 500 no matter what is sent.
+   * The route spreads the body straight into Complain.create, so field names
+   * must match the model, not the validator: it checks `title` while the column
+   * is `subject`, and ignores `complainType` entirely though it is NOT NULL.
+   * Both are sent.
    *
-   * `category` is what the validator checks; the handler translates it into the
-   * model's `complainType`. `description` is optional to the validator but NOT
-   * NULL in the model, so it always has to be filled in.
+   * This currently fails for everyone. After the spread the handler forces
+   * `status: 'PENDING'`, and that column is ENUM('Open','In_Progress',
+   * 'Resolved','Closed'), so MySQL answers "Data truncated for column
+   * 'status'". Changing that one word to 'Open' server-side makes it work with
+   * no change here.
    */
   create: async (data: {
     customerId: number;
@@ -701,13 +706,14 @@ export const complaintsApi = {
     category: ComplaintCategory;
     priority?: ComplaintPriority;
   }) => {
-    return await apiRequest('/complaints', {
+    return await apiRequest('/client/complaints', {
       method: 'POST',
       body: JSON.stringify({
         customerId: data.customerId,
+        title: data.subject,
         subject: data.subject,
         description: data.description,
-        category: data.category,
+        complainType: data.category,
         priority: data.priority || 'Medium',
       }),
     });
