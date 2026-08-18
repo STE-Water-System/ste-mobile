@@ -10,7 +10,18 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.mahamat.ali.ste",
-      "appleTeamId": "K2A939B28F"
+      "appleTeamId": "K2A939B28F",
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": false,
+          "NSAllowsLocalNetworking": true,
+          "NSExceptionDomains": {
+            "2.24.141.110": {
+              "NSExceptionAllowsInsecureHTTPLoads": true
+            }
+          }
+        }
+      }
     },
     "android": {
       "adaptiveIcon": {
