@@ -135,6 +135,7 @@
     "submit": "Envoyer",
     "sent": "Réclamation envoyée",
     "missingFields": "Renseignez l'objet et la description.",
+    "forbidden": "Ce compte n'a pas l'autorisation d'enregistrer une réclamation.",
     "type_Technical": "Technique",
     "type_Billing": "Facturation",
     "type_Maintenance": "Entretien",

@@ -138,6 +138,7 @@
     "submit": "إرسال",
     "sent": "تم إرسال الشكوى",
     "missingFields": "أدخل الموضوع والوصف.",
+    "forbidden": "هذا الحساب غير مخوّل بتسجيل شكوى.",
     "type_Technical": "تقني",
     "type_Billing": "الفوترة",
     "type_Maintenance": "صيانة",

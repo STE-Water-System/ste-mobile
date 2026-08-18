@@ -37,7 +37,12 @@ const ComplaintScreen = () => {
     onSuccess: () => {
       Alert.alert('', t('complaints.sent'), [{ text: 'OK', onPress: () => router.back() }]);
     },
-    onError: (err: any) => setError(err?.message || t('auth.failed')),
+    onError: (err: any) => {
+      // The route declares requireRole([ADMIN, VALIDATOR, OPERATOR]) — an AGENT
+      // only gets through because the check is currently disabled server-side.
+      // Say so plainly if it is ever turned back on.
+      setError(err?.isForbidden ? t('complaints.forbidden') : err?.message || t('auth.failed'));
+    },
   });
 
   const submit = () => {

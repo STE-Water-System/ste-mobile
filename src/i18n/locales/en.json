@@ -135,6 +135,7 @@
     "submit": "Send",
     "sent": "Complaint sent",
     "missingFields": "Enter a subject and a description.",
+    "forbidden": "This account is not allowed to file complaints.",
     "type_Technical": "Technical",
     "type_Billing": "Billing",
     "type_Maintenance": "Maintenance",
