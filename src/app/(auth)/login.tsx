@@ -15,7 +15,6 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Button, Field, Notice, Segmented, TextLink } from '../../components/ui';
-import { SettingsButton } from '../../components/SettingsButton';
 import { useAuthStore } from '../../store/authStore';
 import { colors, radius, shadow, spacing } from '../../theme';
 
@@ -73,10 +72,6 @@ const LoginScreen = () => {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
-      <View style={styles.topBar}>
-        <SettingsButton />
-      </View>
-
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -188,7 +183,6 @@ const LoginScreen = () => {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   flex: { flex: 1 },
-  topBar: { alignItems: 'flex-end', paddingHorizontal: spacing(5), paddingTop: spacing(2) },
   body: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: spacing(7), paddingBottom: spacing(6) },
 
   brand: { alignItems: 'center', marginBottom: spacing(8) },

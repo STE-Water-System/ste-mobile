@@ -8,8 +8,10 @@ import { colors, radius, spacing } from '../theme';
 import { Button, Sheet } from './ui';
 
 /**
- * The single header action of every screen: language and sign-out, in a sheet.
- * Keeping them here is what lets the rest of the screens stay chrome-free.
+ * The single header action of every signed-in screen: language and sign-out, in
+ * a sheet. Keeping them here is what lets the rest of the screens stay
+ * chrome-free. Login has neither — it follows the device language, and there is
+ * no session to sign out of.
  */
 export const SettingsButton = () => {
   const { t, i18n } = useTranslation();
