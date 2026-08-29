@@ -34,7 +34,7 @@ import {
   type AccessReason,
 } from '../../services/api';
 import { formatDate, readingLabel, readingTone } from '../../lib/format';
-import { colors, radius, spacing, textStart, type } from '../../theme';
+import { arrowBack, colors, radius, spacing, textStart, type } from '../../theme';
 
 /** One counter of the round header. */
 const Stat = ({ label, value, strong }: { label: string; value: number; strong?: boolean }) => (
@@ -78,16 +78,16 @@ const ReadingScreen = () => {
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<string | null>(null);
 
   // The rows the commercial assigned to this agent — the screen's home state.
   const round = useQuery({
     queryKey: ['agent-round'],
     queryFn: async () => {
-      const [assigned, summary] = await Promise.all([
-        meterApi.getAssignedRound(),
-        meterApi.getRoundSummary(),
-      ]);
-      return { items: assigned.items, summary: summary ?? summarizeRound(assigned.items) };
+      const assigned = await meterApi.getAssignedRound();
+      // Keep the counters consistent with the rows the agent can actually see.
+      // There is no summary route in the current backend contract.
+      return { items: assigned.items, summary: summarizeRound(assigned.items) };
     },
   });
 
@@ -148,11 +148,16 @@ const ReadingScreen = () => {
     setError(null);
   };
 
-  const clearCustomer = () => {
+  const resetCustomer = () => {
     setCustomer(null);
     setDetails([]);
     setMeterIndex(0);
     clearForm();
+  };
+
+  const clearCustomer = () => {
+    setFeedback(null);
+    resetCustomer();
   };
 
   /** GET /api/meter-readings/customer/:code — customer, meters and previous index. */
@@ -163,6 +168,7 @@ const ReadingScreen = () => {
     const trimmed = raw.trim();
     if (!trimmed) return;
 
+    setFeedback(null);
     setSearching(true);
     try {
       const { customer: found, details: loaded } = await meterApi.loadCustomerForReading(trimmed);
@@ -206,7 +212,7 @@ const ReadingScreen = () => {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (permission.status !== 'granted') return;
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
         allowsEditing: true,
         aspect: [4, 3],
         quality: 0.8,
@@ -223,7 +229,7 @@ const ReadingScreen = () => {
     if (camera.status === 'granted') {
       try {
         const result = await ImagePicker.launchCameraAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          mediaTypes: ['images'],
           allowsEditing: true,
           aspect: [4, 3],
           quality: 0.8,
@@ -305,18 +311,14 @@ const ReadingScreen = () => {
       await meterApi.updateReading(readingId, payload);
 
       // The row just changed status, so the round no longer reflects the server.
-      queryClient.invalidateQueries({ queryKey: ['agent-round'] });
+      await queryClient.invalidateQueries({ queryKey: ['agent-round'] });
 
-      Alert.alert('', correcting ? t('agent.resent') : t('agent.sent'), [
-        {
-          text: t('common.ok'),
-          onPress: () => {
-            clearForm();
-            // Reload so the blocking state reflects what the server now holds.
-            loadCustomer(searchId, { silent: true });
-          },
-        },
-      ]);
+      const savedMessage = correcting ? t('agent.resent') : t('agent.sent');
+      setFeedback(savedMessage);
+      // A completed assignment is no longer an editable form. Return to the
+      // round immediately so the agent can pick the next customer.
+      resetCustomer();
+      Alert.alert('', savedMessage, [{ text: t('common.ok') }]);
     } catch (err: any) {
       if (err?.isNotFound) {
         // Reassigned or already handled elsewhere — reload to show its real state.
@@ -345,10 +347,26 @@ const ReadingScreen = () => {
 
   return (
     <Screen scroll>
-      <Header title={t('agent.tabReading')} />
+      <Header
+        title={t('agent.tabReading')}
+        action={
+          customer ? (
+            <TouchableOpacity
+              style={styles.headerBack}
+              onPress={clearCustomer}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.back')}
+            >
+              <Text style={styles.headerBackLabel}>{arrowBack()}</Text>
+            </TouchableOpacity>
+          ) : undefined
+        }
+      />
 
       {!customer ? (
         <>
+          {!!feedback && <Notice text={feedback} tone="success" />}
           <Field
             label={t('agent.searchLabel')}
             value={searchId}
@@ -589,6 +607,16 @@ const styles = StyleSheet.create({
   statValue: { fontSize: 20, fontWeight: '800', color: colors.text },
   statValueStrong: { color: colors.primary },
   statLabel: { textAlign: 'center' },
+
+  headerBack: {
+    width: 34,
+    height: 34,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surfaceAlt,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerBackLabel: { fontSize: 16, color: colors.textMuted },
 
   roundTitle: { marginTop: spacing(6), marginBottom: spacing(2), marginStart: spacing(2) },
   roundRow: {

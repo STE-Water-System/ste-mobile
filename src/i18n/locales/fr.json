@@ -13,7 +13,8 @@
     "currency": "FCFA",
     "sessionExpired": "Session expirée. Reconnectez-vous.",
     "forbidden": "Accès non autorisé.",
-    "offline": "Serveur injoignable."
+    "offline": "Serveur injoignable.",
+    "back": "Retour"
   },
   "auth": {
     "clientTab": "Espace Client",

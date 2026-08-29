@@ -313,37 +313,6 @@ export const summarizeRound = (readings: any[]): RoundSummary => ({
   sent: readings.filter(isAwaitingValidation).length,
 });
 
-const numberAt = (source: any, ...keys: string[]): number | null => {
-  for (const key of keys) {
-    const value = Number(source?.[key]);
-    if (Number.isFinite(value)) return value;
-  }
-  return null;
-};
-
-/**
- * GET /api/meter-readings/summary is recent and its payload is not pinned down,
- * so read the counters leniently and let the caller fall back to counting the
- * list when nothing recognisable comes back.
- */
-const normalizeRoundSummary = (response: any): RoundSummary | null => {
-  const source = response?.data ?? response;
-  if (!source || typeof source !== 'object') return null;
-
-  const counts = source.counts ?? source.byStatus ?? source.statusCounts ?? source;
-  const pending = numberAt(counts, 'PENDING', 'pending');
-  const rejected = numberAt(counts, 'REJECTED', 'rejected');
-  const submitted = numberAt(counts, 'SUBMITTED', 'submitted');
-  const resubmitted = numberAt(counts, 'RE_SUBMITED', 'reSubmited', 'resubmitted');
-  const total = numberAt(source, 'total', 'totalReadings', 'count');
-
-  if (pending === null && total === null) return null;
-
-  const todo = (pending ?? 0) + (rejected ?? 0);
-  const sent = (submitted ?? 0) + (resubmitted ?? 0);
-  return { total: total ?? todo + sent, todo, sent };
-};
-
 /** `currentIndex` / `consumption` are validated with isDecimal({ decimal_digits: '0,2' }). */
 const toDecimalString = (value: any): string => {
   const num = Number(value);
@@ -615,19 +584,6 @@ export const meterApi = {
     const normalized = normalizeListResponse(response);
 
     return { ...normalized, items: sortRound(normalized.items) };
-  },
-
-  /**
-   * GET /api/meter-readings/summary — round counters straight from the server,
-   * or null when the route is unavailable or answers in an unexpected shape.
-   */
-  getRoundSummary: async (): Promise<RoundSummary | null> => {
-    try {
-      return normalizeRoundSummary(await apiRequest('/meter-readings/summary', { method: 'GET' }));
-    } catch (error: any) {
-      console.warn('Could not load the round summary:', error?.message);
-      return null;
-    }
   },
 
   /**
