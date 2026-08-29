@@ -79,10 +79,6 @@ export class ApiError extends Error {
   get isNotFound() {
     return this.status === 404;
   }
-  /** Backend returns 409 when a reading already exists for this meter and billing month */
-  get isDuplicate() {
-    return this.status === 409;
-  }
 }
 
 // The backend reports failures either as { message } or as express-validator { errors: [{ msg, path }] }
@@ -245,10 +241,20 @@ export type ReadingStatus = keyof typeof READING_STATUS;
 export const normalizeStatus = (reading: any): string =>
   String(reading?.status || '').trim().toUpperCase();
 
-/** A reading awaiting validation blocks any new submission. */
-export const isPendingStatus = (reading: any): boolean => {
+/**
+ * A row the agent may still fill in: PENDING is a fresh assignment created by
+ * the commercial, REJECTED one the validator sent back for correction.
+ * Everything else is out of the agent's hands.
+ */
+export const isEditableStatus = (reading: any): boolean => {
   const status = normalizeStatus(reading);
-  return status === READING_STATUS.PENDING || status === READING_STATUS.SUBMITTED || status === READING_STATUS.RE_SUBMITED;
+  return status === READING_STATUS.PENDING || status === READING_STATUS.REJECTED;
+};
+
+/** Submitted to the validator and not yet ruled on — read only for the agent. */
+export const isAwaitingValidation = (reading: any): boolean => {
+  const status = normalizeStatus(reading);
+  return status === READING_STATUS.SUBMITTED || status === READING_STATUS.RE_SUBMITED;
 };
 
 export const isApprovedStatus = (reading: any): boolean =>
@@ -257,12 +263,86 @@ export const isApprovedStatus = (reading: any): boolean =>
 export const isRejectedStatus = (reading: any): boolean =>
   normalizeStatus(reading) === READING_STATUS.REJECTED;
 
+/** The primary key, whichever name the route serialises it under. */
+export const readingIdOf = (reading: any): number | null => {
+  const id = Number(reading?.meterReadingId ?? reading?.readingId ?? reading?.id);
+  return Number.isFinite(id) && id > 0 ? id : null;
+};
+
 export const readingDateOf = (reading: any): number =>
   new Date(reading?.readingDate || reading?.createdAt || 0).getTime();
 
 /** Most recent first. `sortBy=readingDate` is not honoured by the backend, so sort here. */
 const sortByDateDesc = (readings: any[]): any[] =>
   [...readings].sort((a, b) => readingDateOf(b) - readingDateOf(a));
+
+/** The customer behind a reading, wherever the route happens to nest them. */
+export const customerOf = (reading: any): any =>
+  reading?.customer ||
+  reading?.meter?.customer ||
+  reading?.meter?.connectionRequest?.customer ||
+  null;
+
+export const customerNameOf = (customer: any): string =>
+  `${customer?.firstName || ''} ${customer?.lastName || ''}`.trim();
+
+/** What still needs doing comes first; a rejected reading is the most urgent of all. */
+const roundRank = (reading: any): number => {
+  if (isRejectedStatus(reading)) return 0;
+  if (isEditableStatus(reading)) return 1;
+  if (isAwaitingValidation(reading)) return 2;
+  return 3;
+};
+
+const sortRound = (readings: any[]): any[] =>
+  [...readings].sort((a, b) => roundRank(a) - roundRank(b) || readingDateOf(b) - readingDateOf(a));
+
+export interface RoundSummary {
+  /** Readings assigned to the agent for this round. */
+  total: number;
+  /** Still to record: PENDING plus REJECTED. */
+  todo: number;
+  /** Handed to the validator: SUBMITTED plus RE_SUBMITED. */
+  sent: number;
+}
+
+/** Counted from the round itself — always consistent with the rows on screen. */
+export const summarizeRound = (readings: any[]): RoundSummary => ({
+  total: readings.length,
+  todo: readings.filter(isEditableStatus).length,
+  sent: readings.filter(isAwaitingValidation).length,
+});
+
+const numberAt = (source: any, ...keys: string[]): number | null => {
+  for (const key of keys) {
+    const value = Number(source?.[key]);
+    if (Number.isFinite(value)) return value;
+  }
+  return null;
+};
+
+/**
+ * GET /api/meter-readings/summary is recent and its payload is not pinned down,
+ * so read the counters leniently and let the caller fall back to counting the
+ * list when nothing recognisable comes back.
+ */
+const normalizeRoundSummary = (response: any): RoundSummary | null => {
+  const source = response?.data ?? response;
+  if (!source || typeof source !== 'object') return null;
+
+  const counts = source.counts ?? source.byStatus ?? source.statusCounts ?? source;
+  const pending = numberAt(counts, 'PENDING', 'pending');
+  const rejected = numberAt(counts, 'REJECTED', 'rejected');
+  const submitted = numberAt(counts, 'SUBMITTED', 'submitted');
+  const resubmitted = numberAt(counts, 'RE_SUBMITED', 'reSubmited', 'resubmitted');
+  const total = numberAt(source, 'total', 'totalReadings', 'count');
+
+  if (pending === null && total === null) return null;
+
+  const todo = (pending ?? 0) + (rejected ?? 0);
+  const sent = (submitted ?? 0) + (resubmitted ?? 0);
+  return { total: total ?? todo + sent, todo, sent };
+};
 
 /** `currentIndex` / `consumption` are validated with isDecimal({ decimal_digits: '0,2' }). */
 const toDecimalString = (value: any): string => {
@@ -279,6 +359,15 @@ const toIntString = (value: any): string => {
 };
 
 const toIsoDate = (date: Date = new Date()): string => date.toISOString().slice(0, 10);
+
+/** YYYY-MM-DD out of whatever shape the API serialises a date in. */
+export const toDateOnly = (value: any): string | undefined => {
+  if (!value) return undefined;
+  const text = String(value);
+  if (/^\d{4}-\d{2}-\d{2}/.test(text)) return text.slice(0, 10);
+  const date = new Date(text);
+  return Number.isNaN(date.getTime()) ? undefined : toIsoDate(date);
+};
 
 /** Built by hand rather than with URLSearchParams, whose support is patchy on React Native. */
 const buildQuery = (params: Record<string, string | number | undefined | null>): string => {
@@ -335,12 +424,14 @@ export interface ReadingPayload {
   latitude?: string;
   comments?: string;
   imageUri?: string;
-  status?: ReadingStatus;
-  /** Bypass the backend's one-reading-per-month guard. */
-  force?: boolean;
 }
 
-/** Build the multipart body shared by POST /new and PUT /:id. */
+/**
+ * Multipart body for PUT /api/meter-readings/:id.
+ *
+ * `status` is deliberately absent: the backend derives the transition from the
+ * row it is updating (PENDING → SUBMITTED, REJECTED → RE_SUBMITED).
+ */
 const buildReadingForm = (data: ReadingPayload): FormData => {
   const form = new FormData();
 
@@ -374,8 +465,6 @@ const buildReadingForm = (data: ReadingPayload): FormData => {
   if (data.longitude) form.append('longitude', String(data.longitude));
   if (data.latitude) form.append('latitude', String(data.latitude));
   if (data.comments) form.append('comments', data.comments);
-  if (data.status) form.append('status', data.status);
-  if (data.force) form.append('force', 'true');
   if (data.imageUri) appendPhoto(form, data.imageUri);
 
   return form;
@@ -507,6 +596,41 @@ export const meterApi = {
   },
 
   /**
+   * GET /api/meter-readings?status=PENDING&all=true — the round assigned to the
+   * signed-in agent. The listing is scoped to them backend-side, and `all=true`
+   * widens it past PENDING so rows already sent (SUBMITTED / RE_SUBMITED) and
+   * sent back (REJECTED) come along.
+   */
+  getAssignedRound: async (options: { limit?: number } = {}) => {
+    const query = buildQuery({
+      status: READING_STATUS.PENDING,
+      all: 'true',
+      page: 1,
+      limit: options.limit ?? 200,
+      sortBy: 'createdAt',
+      order: 'DESC',
+    });
+
+    const response = await apiRequest(`/meter-readings${query}`, { method: 'GET' });
+    const normalized = normalizeListResponse(response);
+
+    return { ...normalized, items: sortRound(normalized.items) };
+  },
+
+  /**
+   * GET /api/meter-readings/summary — round counters straight from the server,
+   * or null when the route is unavailable or answers in an unexpected shape.
+   */
+  getRoundSummary: async (): Promise<RoundSummary | null> => {
+    try {
+      return normalizeRoundSummary(await apiRequest('/meter-readings/summary', { method: 'GET' }));
+    } catch (error: any) {
+      console.warn('Could not load the round summary:', error?.message);
+      return null;
+    }
+  },
+
+  /**
    * Latest APPROVED reading of a meter — the source of truth for previousIndex.
    * The customer endpoint only exposes the current month, so this is its own query.
    */
@@ -531,7 +655,12 @@ export const meterApi = {
 
   /**
    * Everything the reading screen needs about a customer: identity, meters, the
-   * previous index (last APPROVED reading) and whether a new reading is allowed.
+   * previous index and the row the agent is expected to complete.
+   *
+   * Readings are no longer created from the mobile app — the commercial creates
+   * one PENDING row per meter when assigning the round, and the agent fills it
+   * in. So each meter resolves to at most one editable row, and when there is
+   * none the meter simply is not part of this month's round.
    */
   loadCustomerForReading: async (customerCodeOrId: string | number) => {
     const { customer, meters } = await meterApi.getCustomerWithMeters(customerCodeOrId);
@@ -557,32 +686,28 @@ export const meterApi = {
         const lastApproved = await meterApi.getLastApprovedReading(meter.meterId);
         const approvedThisMonth = currentMonthReadings.find(isApprovedStatus) || null;
 
-        // previousIndex: last APPROVED reading, else an approved reading of the
-        // current month, else the index recorded when the meter was installed.
+        // The row the agent has to complete with PUT /api/meter-readings/:id.
+        const assignment = currentMonthReadings.find(isEditableStatus) || null;
+        const awaitingValidation = currentMonthReadings.find(isAwaitingValidation) || null;
+
+        // previousIndex: the value the commercial set on the assignment, else
+        // the last APPROVED reading, else an approved reading of the current
+        // month, else the index recorded when the meter was installed.
         const previousIndex =
+          Number(assignment?.previousIndex) ||
           Number(lastApproved?.currentIndex) ||
           Number(approvedThisMonth?.currentIndex) ||
           Number(meter.installationIndex) ||
           0;
-
-        const pendingReading = currentMonthReadings.find(isPendingStatus) || null;
-        const rejectedThisMonth = currentMonthReadings.find(isRejectedStatus) || null;
 
         return {
           meter,
           currentMonthReadings,
           lastApprovedReading: lastApproved,
           previousIndex,
-          pendingReading,
+          assignment,
+          awaitingValidation,
           approvedThisMonth,
-          rejectedThisMonth,
-          // The backend rejects a second reading for the same meter and month with a 409.
-          blocked: Boolean(pendingReading || approvedThisMonth),
-          blockedReason: pendingReading
-            ? "Relevé en attente d'approbation"
-            : approvedThisMonth
-            ? 'Relevé déjà approuvé pour ce mois'
-            : null,
         };
       })
     );
@@ -591,16 +716,12 @@ export const meterApi = {
   },
 
   /**
-   * POST /api/meter-readings/new — multipart/form-data, status becomes PENDING.
-   * Throws an ApiError with isDuplicate === true when a reading already exists
-   * for this meter and billing month.
-   */
-  submitReading: async (data: ReadingPayload) => {
-    return await apiUpload('/meter-readings/new', buildReadingForm(data), 'POST');
-  },
-
-  /**
-   * PUT /api/meter-readings/:id — multipart/form-data, corrects an existing reading.
+   * PUT /api/meter-readings/:id — multipart/form-data.
+   *
+   * The only write the mobile app performs on a reading. The row already exists,
+   * created by the commercial when the round was assigned, so this fills it in
+   * (first submission) or corrects it (after a rejection); the backend moves the
+   * status to SUBMITTED or RE_SUBMITED accordingly.
    */
   updateReading: async (readingId: number, data: ReadingPayload) => {
     return await apiUpload(`/meter-readings/${readingId}`, buildReadingForm(data), 'PUT');

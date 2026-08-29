@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Alert, Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -22,13 +23,28 @@ import {
 } from '../../components/ui';
 import {
   ACCESS_REASONS,
-  READING_STATUS,
+  customerNameOf,
+  customerOf,
   formatAddress,
+  isRejectedStatus,
   meterApi,
+  readingIdOf,
+  summarizeRound,
+  toDateOnly,
   type AccessReason,
 } from '../../services/api';
 import { formatDate, readingLabel, readingTone } from '../../lib/format';
 import { colors, radius, spacing, textStart, type } from '../../theme';
+
+/** One counter of the round header. */
+const Stat = ({ label, value, strong }: { label: string; value: number; strong?: boolean }) => (
+  <View style={styles.stat}>
+    <Text style={[styles.statValue, strong && styles.statValueStrong]}>{value}</Text>
+    <Text style={[type.caption, styles.statLabel]} numberOfLines={1}>
+      {label}
+    </Text>
+  </View>
+);
 
 /** One entry of meterApi.loadCustomerForReading().details */
 interface MeterDetail {
@@ -36,11 +52,10 @@ interface MeterDetail {
   currentMonthReadings: any[];
   lastApprovedReading: any | null;
   previousIndex: number;
-  pendingReading: any | null;
+  /** The PENDING or REJECTED row this agent has to complete, if any. */
+  assignment: any | null;
+  awaitingValidation: any | null;
   approvedThisMonth: any | null;
-  rejectedThisMonth: any | null;
-  blocked: boolean;
-  blockedReason: string | null;
 }
 
 type Access = 'read' | 'blocked';
@@ -48,6 +63,7 @@ type Access = 'read' | 'blocked';
 const ReadingScreen = () => {
   const { t } = useTranslation();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const [searchId, setSearchId] = useState('');
   const [searching, setSearching] = useState(false);
@@ -63,16 +79,33 @@ const ReadingScreen = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // The rows the commercial assigned to this agent — the screen's home state.
+  const round = useQuery({
+    queryKey: ['agent-round'],
+    queryFn: async () => {
+      const [assigned, summary] = await Promise.all([
+        meterApi.getAssignedRound(),
+        meterApi.getRoundSummary(),
+      ]);
+      return { items: assigned.items, summary: summary ?? summarizeRound(assigned.items) };
+    },
+  });
+
   // --- Derived state -------------------------------------------------------
+
+  const roundItems: any[] = round.data?.items ?? [];
+  const summary = round.data?.summary ?? { total: 0, todo: 0, sent: 0 };
 
   const detail: MeterDetail | null = details[meterIndex] || null;
   const meter = detail?.meter || null;
   const previousIndex = detail?.previousIndex ?? 0;
 
-  // The backend refuses a second reading for the same meter and month (409), so a
-  // rejected reading has to be corrected in place with PUT /api/meter-readings/:id.
-  const editing = detail?.rejectedThisMonth || null;
-  const blocked = Boolean(detail?.blocked);
+  // The app never creates a reading: the commercial pre-creates one row per meter
+  // when assigning the round, and the agent completes it in place with
+  // PUT /api/meter-readings/:id. No open row means nothing to do on this meter.
+  const assignment = detail?.assignment || null;
+  const correcting = isRejectedStatus(assignment);
+  const blocked = !assignment;
   const inaccessible = access === 'blocked';
 
   const parsed = Number(String(currentIndex).replace(/,/g, '.').trim());
@@ -89,20 +122,22 @@ const ReadingScreen = () => {
     if (err?.isUnauthorized) return t('common.sessionExpired');
     if (err?.isForbidden) return t('common.forbidden');
     if (err?.isNotFound) return t('agent.notFound');
-    if (err?.isDuplicate) return t('agent.duplicate');
     return err?.message || t('auth.failed');
   };
 
-  /** Prefill the form for a meter — with the rejected reading's values when correcting one. */
+  /** Prefill the form from the row to complete — a fresh assignment carries no index yet. */
   const selectMeter = (list: MeterDetail[], index: number) => {
     setMeterIndex(index);
     setError(null);
     setPhoto(null);
 
-    const rejected = list[index]?.rejectedThisMonth;
-    setCurrentIndex(rejected?.currentIndex != null ? String(rejected.currentIndex) : '');
-    setComments(rejected?.comments || '');
-    setAccess(rejected?.accessReason === ACCESS_REASONS.Door_Closed ? 'blocked' : 'read');
+    const row = list[index]?.assignment;
+    // A pending assignment is created at index 0; only a value already recorded
+    // (a rejected reading being corrected) is worth putting back in the field.
+    const recorded = Number(row?.currentIndex);
+    setCurrentIndex(Number.isFinite(recorded) && recorded > 0 ? String(row.currentIndex) : '');
+    setComments(row?.comments || '');
+    setAccess(row?.accessReason === ACCESS_REASONS.Door_Closed ? 'blocked' : 'read');
   };
 
   const clearForm = () => {
@@ -121,7 +156,10 @@ const ReadingScreen = () => {
   };
 
   /** GET /api/meter-readings/customer/:code — customer, meters and previous index. */
-  const loadCustomer = async (raw: string, { silent = false } = {}) => {
+  const loadCustomer = async (
+    raw: string,
+    { silent = false, focusMeterId }: { silent?: boolean; focusMeterId?: number } = {}
+  ) => {
     const trimmed = raw.trim();
     if (!trimmed) return;
 
@@ -133,8 +171,16 @@ const ReadingScreen = () => {
       setCustomer(found);
       setDetails(loaded as MeterDetail[]);
 
-      // Keep the meter in focus across a refresh, otherwise start on the first one.
-      selectMeter(loaded as MeterDetail[], silent && loaded[meterIndex] ? meterIndex : 0);
+      // Opening a round row focuses its meter; otherwise keep the meter in focus
+      // across a refresh, and start on the first one for a plain search.
+      const focused =
+        focusMeterId != null
+          ? loaded.findIndex((item: MeterDetail) => item.meter?.meterId === focusMeterId)
+          : -1;
+      selectMeter(
+        loaded as MeterDetail[],
+        focused >= 0 ? focused : silent && loaded[meterIndex] ? meterIndex : 0
+      );
     } catch (err: any) {
       if (silent) {
         console.warn('Refresh failed:', err?.message);
@@ -145,6 +191,14 @@ const ReadingScreen = () => {
     } finally {
       setSearching(false);
     }
+  };
+
+  /** Open a round row on its own meter, as if the agent had searched for the code. */
+  const openRound = (row: any) => {
+    const code = customerOf(row)?.customerCode;
+    if (!code) return;
+    setSearchId(String(code));
+    loadCustomer(String(code), { focusMeterId: row.meterId ?? row.meter?.meterId });
   };
 
   const pickPhoto = async () => {
@@ -186,7 +240,7 @@ const ReadingScreen = () => {
   };
 
   const submit = async () => {
-    if (!detail || !meter || blocked) return;
+    if (!detail || !meter || !assignment) return;
     setError(null);
 
     if (!inaccessible) {
@@ -195,7 +249,7 @@ const ReadingScreen = () => {
         return;
       }
       // A correction may reuse the photo already attached to the rejected reading.
-      if (!photo && !editing?.evidencePhotoUrl) {
+      if (!photo && !assignment.evidencePhotoUrl) {
         setError(t('agent.missingPhoto'));
         return;
       }
@@ -216,7 +270,13 @@ const ReadingScreen = () => {
   };
 
   const send = async () => {
-    if (!meter) return;
+    if (!meter || !assignment) return;
+
+    const readingId = readingIdOf(assignment);
+    if (!readingId) {
+      setError(t('agent.noAssignment'));
+      return;
+    }
 
     setSubmitting(true);
     setError(null);
@@ -224,7 +284,9 @@ const ReadingScreen = () => {
     try {
       const payload = {
         meterId: meter.meterId,
-        readingDate: new Date().toISOString().slice(0, 10),
+        // Keep the date the round was assigned for: it decides which month the
+        // reading is billed in, and a late submission must not shift it.
+        readingDate: toDateOnly(assignment.readingDate),
         currentIndex: inaccessible ? previousIndex : parsed,
         previousIndex,
         consumption,
@@ -238,16 +300,14 @@ const ReadingScreen = () => {
         latitude: latitude || undefined,
       };
 
-      if (editing) {
-        // PUT /api/meter-readings/:id — correct and resubmit.
-        const readingId = editing.meterReadingId ?? editing.readingId ?? editing.id;
-        await meterApi.updateReading(readingId, { ...payload, status: READING_STATUS.RE_SUBMITED });
-      } else {
-        // POST /api/meter-readings/new — status becomes PENDING.
-        await meterApi.submitReading(payload);
-      }
+      // PUT /api/meter-readings/:id — completes the assigned row. The backend
+      // moves PENDING to SUBMITTED and REJECTED to RE_SUBMITED on its own.
+      await meterApi.updateReading(readingId, payload);
 
-      Alert.alert('', editing ? t('agent.resent') : t('agent.sent'), [
+      // The row just changed status, so the round no longer reflects the server.
+      queryClient.invalidateQueries({ queryKey: ['agent-round'] });
+
+      Alert.alert('', correcting ? t('agent.resent') : t('agent.sent'), [
         {
           text: t('common.ok'),
           onPress: () => {
@@ -258,10 +318,9 @@ const ReadingScreen = () => {
         },
       ]);
     } catch (err: any) {
-      if (err?.isDuplicate) {
-        // The reading may belong to another agent, in which case it stays
-        // invisible here — the backend scopes listings to their author.
-        setError(t('agent.duplicateOther'));
+      if (err?.isNotFound) {
+        // Reassigned or already handled elsewhere — reload to show its real state.
+        setError(t('agent.assignmentGone'));
         loadCustomer(searchId, { silent: true });
       } else {
         setError(messageFor(err));
@@ -275,10 +334,11 @@ const ReadingScreen = () => {
 
   const notice = (): { text: string; tone: Tone } | null => {
     if (!detail) return null;
+    if (correcting) return { text: t('agent.rejectedNotice'), tone: 'danger' };
+    if (assignment) return { text: t('agent.assignedNotice'), tone: 'info' };
     if (detail.approvedThisMonth) return { text: t('agent.approvedNotice'), tone: 'success' };
-    if (detail.pendingReading) return { text: t('agent.pendingNotice'), tone: 'warning' };
-    if (detail.rejectedThisMonth) return { text: t('agent.rejectedNotice'), tone: 'danger' };
-    return null;
+    if (detail.awaitingValidation) return { text: t('agent.pendingNotice'), tone: 'warning' };
+    return { text: t('agent.noAssignment'), tone: 'warning' };
   };
 
   const banner = notice();
@@ -306,7 +366,55 @@ const ReadingScreen = () => {
             disabled={!searchId.trim()}
           />
           {!!error && <Notice text={error} tone="danger" />}
-          {!error && <Empty text={t('agent.searchHint')} />}
+
+          {/* The round: what this agent was assigned, most urgent first. */}
+          {round.isPending ? (
+            <Loading />
+          ) : round.error ? (
+            <Notice text={messageFor(round.error)} tone="danger" />
+          ) : roundItems.length === 0 ? (
+            <Empty text={t('agent.roundEmpty')} />
+          ) : (
+            <>
+              <View style={styles.stats}>
+                <Stat label={t('agent.roundTotal')} value={summary.total} />
+                <Stat label={t('agent.roundTodo')} value={summary.todo} strong />
+                <Stat label={t('agent.roundSent')} value={summary.sent} />
+              </View>
+
+              <Text style={[type.label, textStart(), styles.roundTitle]}>{t('agent.round')}</Text>
+              <Card>
+                {roundItems.map((row: any, index: number) => {
+                  const rowCustomer = customerOf(row);
+                  const code = rowCustomer?.customerCode;
+                  const name = customerNameOf(rowCustomer);
+                  const meterNumber = row.meter?.meterNumber || row.meterNumber;
+
+                  return (
+                    <View key={readingIdOf(row) ?? index}>
+                      {index > 0 && <Divider />}
+                      <TouchableOpacity
+                        style={styles.roundRow}
+                        activeOpacity={0.7}
+                        disabled={!code}
+                        onPress={() => openRound(row)}
+                      >
+                        <View style={styles.roundText}>
+                          <Text style={[type.bodyStrong, textStart()]} numberOfLines={1}>
+                            {name || meterNumber || '—'}
+                          </Text>
+                          <Text style={[type.caption, textStart()]} numberOfLines={1}>
+                            {[code, meterNumber].filter(Boolean).join(' · ') || '—'}
+                          </Text>
+                        </View>
+                        <Badge label={readingLabel(row, t)} tone={readingTone(row)} />
+                      </TouchableOpacity>
+                    </View>
+                  );
+                })}
+              </Card>
+            </>
+          )}
         </>
       ) : searching ? (
         <Loading />
@@ -402,7 +510,7 @@ const ReadingScreen = () => {
                     <Image source={{ uri: photo }} style={styles.photoPreview} resizeMode="cover" />
                   ) : (
                     <Text style={styles.photoLabel}>
-                      {editing?.evidencePhotoUrl ? t('agent.retakePhoto') : t('agent.takePhoto')}
+                      {assignment?.evidencePhotoUrl ? t('agent.retakePhoto') : t('agent.takePhoto')}
                     </Text>
                   )}
                 </TouchableOpacity>
@@ -423,7 +531,7 @@ const ReadingScreen = () => {
 
           {!blocked && (
             <Button
-              label={editing ? t('agent.resubmit') : t('agent.submit')}
+              label={correcting ? t('agent.resubmit') : t('agent.submit')}
               onPress={submit}
               loading={submitting}
               style={styles.submit}
@@ -435,7 +543,7 @@ const ReadingScreen = () => {
               <Text style={[type.label, textStart(), styles.historyTitle]}>{t('agent.history')}</Text>
               <Card>
                 {detail.currentMonthReadings.map((reading, index) => (
-                  <View key={reading.meterReadingId ?? reading.id ?? index}>
+                  <View key={readingIdOf(reading) ?? index}>
                     {index > 0 && <Divider />}
                     <TouchableOpacity
                       style={styles.historyRow}
@@ -443,7 +551,7 @@ const ReadingScreen = () => {
                       onPress={() =>
                         router.push({
                           pathname: '/reading-details',
-                          params: { readingId: String(reading.meterReadingId ?? reading.id) },
+                          params: { readingId: String(readingIdOf(reading)) },
                         })
                       }
                     >
@@ -469,6 +577,29 @@ const ReadingScreen = () => {
 };
 
 const styles = StyleSheet.create({
+  stats: { flexDirection: 'row', gap: spacing(2), marginTop: spacing(5) },
+  stat: {
+    flex: 1,
+    alignItems: 'center',
+    gap: spacing(0.5),
+    paddingVertical: spacing(3.5),
+    borderRadius: radius.md,
+    backgroundColor: colors.surfaceAlt,
+  },
+  statValue: { fontSize: 20, fontWeight: '800', color: colors.text },
+  statValueStrong: { color: colors.primary },
+  statLabel: { textAlign: 'center' },
+
+  roundTitle: { marginTop: spacing(6), marginBottom: spacing(2), marginStart: spacing(2) },
+  roundRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing(2.5),
+    gap: spacing(3),
+  },
+  roundText: { flex: 1 },
+
   client: {
     flexDirection: 'row',
     alignItems: 'center',
