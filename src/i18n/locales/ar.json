@@ -3,28 +3,166 @@
     "loading": "جارٍ التحميل…",
     "cancel": "إلغاء",
     "confirm": "تأكيد",
+    "continue": "متابعة",
+    "done": "تم",
+    "details": "التفاصيل",
+    "seeAll": "عرض الكل",
     "error": "خطأ",
     "retry": "إعادة المحاولة",
     "close": "إغلاق",
     "ok": "حسناً",
+    "all": "الكل",
     "search": "بحث",
     "unit": "م³",
     "currency": "فرنك",
     "sessionExpired": "انتهت الجلسة. يرجى تسجيل الدخول مجدداً.",
     "forbidden": "الوصول غير مصرّح به.",
     "offline": "تعذّر الوصول إلى الخادم.",
-    "all": "الكل",
     "back": "رجوع"
   },
+  "nav": {
+    "home": "الرئيسية",
+    "round": "الجولة",
+    "clients": "الزبائن",
+    "profile": "حسابي",
+    "bills": "الفواتير",
+    "consumption": "الاستهلاك",
+    "services": "الخدمات",
+    "notifications": "الإشعارات"
+  },
+  "mock": {
+    "banner": "تجريبي · بيانات افتراضية",
+    "estimate": "تقدير",
+    "timeline": {
+      "received": "تم استلام الطلب",
+      "inReview": "قيد الدراسة",
+      "technicianAssigned": "تم تعيين فنّي",
+      "resolved": "تمت المعالجة",
+      "closed": "مغلق"
+    },
+    "notif": {
+      "billReady": {
+        "title": "فاتورة أكتوبر متاحة",
+        "body": "اطّلع على تفاصيل استهلاكك وسدّد قبل تاريخ الاستحقاق."
+      },
+      "outage": {
+        "title": "انقطاع مبرمج في حيّك",
+        "body": "أعمال صيانة على الشبكة، ستعود المياه في نهاية اليوم."
+      },
+      "complaintUpdate": {
+        "title": "شكواك تتقدّم",
+        "body": "تم تعيين فنّي لملفك REC-2026-0117."
+      },
+      "paymentReceived": {
+        "title": "تم استلام الدفع",
+        "body": "شكراً، تم تسجيل دفعك لشهر سبتمبر."
+      },
+      "tip": {
+        "title": "نصيحة الشهر",
+        "body": "صنبور يقطر قد يهدر حتى 120 لتراً في اليوم."
+      }
+    },
+    "agentNotif": {
+      "roundAssigned": {
+        "title": "جولة جديدة مُسندة",
+        "body": "جولتك لهذا الشهر جاهزة: 42 عدّاداً للقراءة."
+      },
+      "readingRejected": {
+        "title": "قراءة مرفوضة",
+        "body": "أُعيدت قراءة العدّاد MTR-00812 للتصحيح: الصورة غير واضحة."
+      },
+      "taskAssigned": {
+        "title": "تدخّل مُسند",
+        "body": "قطع مبرمج في مورسال لهذا اليوم."
+      },
+      "maintenance": {
+        "title": "صيانة التطبيق",
+        "body": "سيُنشر تحديث في نهاية الأسبوع، تذكّر مزامنة قراءاتك."
+      }
+    },
+    "announcement": {
+      "a1": {
+        "title": "إقفال القراءات يوم 28",
+        "body": "يجب إرسال جميع قراءات الشهر قبل يوم 28 للفوترة."
+      },
+      "a2": {
+        "title": "دفاتر جولات جديدة",
+        "body": "أُعيد تنظيم قطاعي دمبي وشاغوا، تحقّق من مسارك."
+      }
+    },
+    "outage": {
+      "moursal": {
+        "title": "أشغال على الأنبوب الرئيسي",
+        "body": "استبدال صمّام، انقطاع من 8 صباحاً إلى 2 ظهراً."
+      },
+      "farcha": {
+        "title": "انخفاض الضغط",
+        "body": "عطل في محطة الضخ، تعود الخدمة تدريجياً."
+      },
+      "chagoua": {
+        "title": "تم إصلاح التسرّب",
+        "body": "تم إصلاح التسرّب المُبلّغ عنه في الشارع 4502، عادت الخدمة."
+      }
+    },
+    "complaint": {
+      "c1": {
+        "subject": "ضغط ضعيف جداً في الصباح"
+      },
+      "c2": {
+        "subject": "اعتراض على مبلغ فاتورة سبتمبر"
+      },
+      "c3": {
+        "subject": "عون القراءة لم يمرّ"
+      }
+    },
+    "task": {
+      "note": {
+        "overdue3": "3 فواتير غير مدفوعة. قدّم إشعار القطع قبل التدخّل.",
+        "overdue2": "فاتورتان غير مدفوعتين. اقترح جدول سداد إن كان الزبون حاضراً.",
+        "paid": "تم الدفع أمس في الوكالة. أعد الخدمة.",
+        "suspectedLeak": "استهلاك غير طبيعي منذ شهرين، تحقّق من العدّاد والوصلات."
+      }
+    },
+    "tip": {
+      "t1": {
+        "title": "أغلق الصنبور",
+        "body": "أثناء تنظيف الأسنان أو غسل الأواني، توفّر حتى 10 لترات."
+      },
+      "t2": {
+        "title": "تعقّب التسرّبات",
+        "body": "اقرأ عدّادك مساءً وصباحاً دون استهلاك: يجب ألّا يتغيّر."
+      },
+      "t3": {
+        "title": "تابع مؤشرك",
+        "body": "قراءة ذاتية شهرية تجنّبك المفاجآت في الفاتورة."
+      },
+      "t4": {
+        "title": "اسقِ في المساء",
+        "body": "يتبخّر الماء أقل وتستفيد نباتاتك أكثر."
+      }
+    },
+    "agency": {
+      "hours": {
+        "standard": "الاثنين–الجمعة 7:30–15:30",
+        "extended": "الاثنين–السبت 7:30–17:00"
+      }
+    }
+  },
   "auth": {
+    "tagline": "الشركة التشادية للمياه",
     "clientTab": "فضاء الزبون",
     "agentTab": "فضاء العون",
+    "clientTitle": "الدخول إلى حسابي",
+    "clientSubtitle": "فواتيرك واستهلاكك وطلباتك.",
+    "agentTitle": "دخول العون",
+    "agentSubtitle": "بيانات الدخول من الشركة، ثم رمز تطبيق المصادقة.",
     "clientCode": "رمز الزبون",
     "phone": "الهاتف",
     "email": "البريد الإلكتروني",
     "password": "كلمة المرور",
     "show": "إظهار",
     "hide": "إخفاء",
+    "otpHint": "سيلي ذلك تحقّق بخطوتين.",
     "clientSubmit": "عرض حسابي",
     "agentSubmit": "تسجيل الدخول",
     "helpLink": "أين أجد رمز الزبون؟",
@@ -37,18 +175,200 @@
     "missingAgent": "أدخل البريد الإلكتروني وكلمة المرور.",
     "notFound": "لا يوجد حساب مطابق لهذه البيانات.",
     "failed": "تعذّر تسجيل الدخول.",
-    "footer": "© {{year}} STE"
+    "adminBlocked": "لا يمكن لحساب المسؤول هذا استخدام التطبيق.",
+    "footer": "© {{year}} STE",
+    "phoneHint": "الرقم المسجل لدى الشركة، مثال 66 00 00 00"
+  },
+  "otp": {
+    "title": "التحقّق",
+    "heading": "رمز تطبيق المصادقة",
+    "lead": "أدخل الرمز المكوّن من 6 أرقام الذي يولّده تطبيقك (Google Authenticator، Microsoft Authenticator، Authy…) للحساب {{email}}.",
+    "rotates": "يتغيّر الرمز خلال {{seconds}} ث",
+    "verify": "تحقّق",
+    "incomplete": "أدخل الأرقام الستة للرمز.",
+    "invalid": "رمز غير صحيح أو منتهٍ. حاول مجدداً بالرمز المعروض.",
+    "expired": "انتهت مهلة الدخول، ابدأ من جديد.",
+    "noAccess": "لا أستطيع الوصول إلى تطبيقي",
+    "helpTitle": "تطبيق المصادقة",
+    "helpBody": "اتصل بمسؤول STE لإعادة تعيين المصادقة الثنائية لحسابك.",
+    "demoTitle": "وضع تجريبي",
+    "demoBody": "لم يُربط خادم التحقّق بعد. استخدم الرمز {{code}} للمتابعة."
   },
   "settings": {
     "logout": "تسجيل الخروج",
     "logoutConfirm": "هل تريد تسجيل الخروج؟"
+  },
+  "agentHome": {
+    "greeting": "مرحباً، {{name}}",
+    "progressTitle": "تقدّم الجولة",
+    "progressCount": "{{done}} / {{total}} قراءة مُرسلة",
+    "assigned": "المُسندة",
+    "todo": "للقراءة",
+    "sent": "المُرسلة",
+    "approved": "المُصادق عليها",
+    "rejectedHint": "{{count}} للتصحيح",
+    "quickActions": "إجراءات سريعة",
+    "tileRound": "جولتي",
+    "tileLookup": "البحث عن زبون",
+    "tileTasks": "التدخّلات",
+    "tileIncident": "الإبلاغ عن خلل",
+    "tileRoute": "المسار",
+    "tileHistory": "السجل",
+    "nextUp": "المهام التالية",
+    "allDoneTitle": "اكتملت الجولة",
+    "allDoneText": "تم إرسال جميع قراءاتك. عمل رائع!",
+    "announcements": "إعلانات",
+    "syncOk": "تمت مزامنة البيانات",
+    "syncAt": "آخر تحديث: {{time}}",
+    "syncPull": "اسحب للأسفل للتحديث."
+  },
+  "round": {
+    "title": "جولتي",
+    "searchPlaceholder": "رمز الزبون (مثال CUST-001)",
+    "progress": "{{done}} من {{total}} قراءة مُرسلة",
+    "rejectedHint": "{{count}} قراءة مرفوضة يجب تصحيحها أولاً",
+    "emptyTitle": "لا توجد جولة",
+    "emptyFilter": "لا توجد قراءة تطابق هذا المرشّح.",
+    "filter": {
+      "all": "الكل",
+      "todo": "المتبقية",
+      "rejected": "المرفوضة",
+      "sent": "المُرسلة",
+      "approved": "المُصادق عليها"
+    }
+  },
+  "reading": {
+    "title": "قراءة",
+    "assignedFor": "تاريخ القراءة",
+    "indexHint": "المؤشر المعروض على العدّاد، بـ {{unit}}",
+    "inaccessibleHint": "العدّاد غير متاح: يُحتفظ بالمؤشر السابق ويكون الاستهلاك صفراً.",
+    "savedTitle": "تم إرسال القراءة",
+    "monthOf": "قراءة شهر {{month}}",
+    "month": "شهر القراءة",
+    "deadline": "الموعد النهائي"
+  },
+  "clients": {
+    "subtitle": "وضعية الزبون في الميدان",
+    "emptyTitle": "البحث عن زبون",
+    "readMeter": "قراءة",
+    "reportIncident": "إبلاغ",
+    "category": "الفئة",
+    "meters": "{{count}} عدّاد",
+    "hint": "المبالغ المعروضة من فوترة STE. يتم الدفع في الوكالة أو عبر تطبيق الزبون."
+  },
+  "tasks": {
+    "title": "التدخّلات",
+    "subtitle": "{{count}} تدخّل للمعالجة",
+    "empty": "لا توجد تدخّلات لهذا المرشّح.",
+    "notFound": "التدخّل غير موجود.",
+    "filter": {
+      "open": "للمعالجة",
+      "done": "المنجزة",
+      "all": "الكل"
+    },
+    "kind": {
+      "disconnection": "قطع",
+      "reconnection": "إعادة الربط",
+      "inspection": "معاينة",
+      "meter_replacement": "استبدال عدّاد"
+    },
+    "status": {
+      "todo": "للتنفيذ",
+      "in_progress": "جارٍ",
+      "done": "منجز",
+      "blocked": "متعذّر"
+    },
+    "priorityHigh": "ذو أولوية",
+    "priority": "الأولوية",
+    "priorityLabel": {
+      "low": "منخفضة",
+      "normal": "عادية",
+      "high": "عالية"
+    },
+    "due": "الموعد",
+    "amountDue": "المبلغ المستحق",
+    "actions": "الإجراءات",
+    "start": "بدء التدخّل",
+    "finish": "إنهاء التدخّل",
+    "finishTitle": "إنهاء",
+    "finishBody": "هل تؤكد أن التدخّل قد اكتمل؟",
+    "resume": "استئناف",
+    "block": "تعذّر التدخّل",
+    "blockTitle": "تدخّل متعذّر",
+    "blockBody": "أبلغ عن تعذّر التدخّل (الزبون غائب، المدخل مغلق…). ستتم إعادة برمجته.",
+    "blockConfirm": "إبلاغ",
+    "doneNotice": "تم إنهاء التدخّل وتسجيله.",
+    "call": "الاتصال بالزبون",
+    "callBody": "سيتوفر الاتصال بـ {{name}} بعد دمج خدمة الهاتف."
+  },
+  "incident": {
+    "title": "الإبلاغ عن خلل",
+    "subtitle": "تسرّب، عدّاد معطّل، ربط غير قانوني…",
+    "kind": "نوع الخلل",
+    "type": {
+      "leak": "تسرّب مياه",
+      "brokenMeter": "عدّاد معطّل",
+      "illegalConnection": "ربط غير قانوني",
+      "damagedCover": "غرفة عدّاد متضرّرة",
+      "noWater": "انقطاع المياه",
+      "other": "أخرى"
+    },
+    "optional": "اختياري",
+    "description": "الوصف",
+    "descriptionPlaceholder": "صف ما تلاحظه في الموقع",
+    "tooShort": "صف الخلل ببضع كلمات (10 أحرف على الأقل).",
+    "addPhoto": "إضافة صورة",
+    "submit": "إرسال البلاغ",
+    "sentTitle": "تم إرسال البلاغ",
+    "sentBody": "المرجع {{reference}}. سيتم إبلاغ الفريق التقني."
+  },
+  "route": {
+    "title": "مسار اليوم",
+    "subtitle": "القراءات المتبقية، مجمّعة حسب المنطقة",
+    "empty": "لا قراءات متبقية، مسارك فارغ.",
+    "stops": "المحطات",
+    "areas": "المناطق",
+    "estimate": "المدة",
+    "hours": "{{hours}} س {{minutes}} د",
+    "minutes": "{{minutes}} د",
+    "stopCount": "{{count}} محطة",
+    "hint": "الترتيب حسب الأولوية: القراءات المرفوضة أولاً ثم حسب المنطقة. المس محطة لإدخال القراءة."
+  },
+  "history": {
+    "title": "سجل الشهر",
+    "empty": "لم تُرسل أي قراءة بعد."
+  },
+  "notifications": {
+    "unread": "{{count}} غير مقروءة",
+    "allRead": "كل شيء مقروء",
+    "markAll": "تعليم الكل كمقروء",
+    "empty": "لا توجد إشعارات."
+  },
+  "profile": {
+    "thisMonth": "هذا الشهر",
+    "account": "حسابي",
+    "meters": "العدّادات",
+    "preferences": "التفضيلات",
+    "notifications": "الإشعارات",
+    "notificationsDesc": "جولة جديدة، قراءات مرفوضة، تدخّلات",
+    "notificationsDescClient": "الفواتير، الانقطاعات، متابعة الطلبات",
+    "language": "اللغة",
+    "languageDesc": "Français · English · العربية",
+    "support": "المساعدة",
+    "callSupport": "دعم STE",
+    "callSupportBody": "اتصل بالرقم {{phone}} من الاثنين إلى الجمعة.",
+    "about": "حول التطبيق",
+    "version": "الإصدار {{version}}",
+    "chooseLanguage": "اختر اللغة",
+    "languageRestart": "سيتغير اتجاه القراءة: سيُعاد تشغيل التطبيق لتطبيق اللغة."
   },
   "agent": {
     "tabReading": "القراءة",
     "tabClients": "الزبائن",
     "greeting": "مرحباً",
     "searchLabel": "رمز الزبون",
-    "searchHint": "أدخل رمز الزبون للبدء.",
+    "searchPlaceholder": "CUST-001",
+    "searchHint": "أدخل رمز الزبون لعرض وضعيته.",
     "round": "جولتي",
     "roundEmpty": "لا توجد قراءات مُسندة إليك حالياً.",
     "roundTotal": "المُسندة",
@@ -56,6 +376,11 @@
     "roundSent": "المُرسلة",
     "notFound": "الزبون غير موجود.",
     "noMeter": "لا يوجد عدّاد مرتبط بهذا الزبون.",
+    "client": "الزبون",
+    "address": "العنوان",
+    "bills": "الفواتير",
+    "change": "تغيير",
+    "readingDetails": "تفاصيل القراءة",
     "meter": "العدّاد",
     "meterCount": "{{count}} عدّادات",
     "previousIndex": "المؤشر السابق",
@@ -65,11 +390,13 @@
     "takePhoto": "التقاط صورة",
     "retakePhoto": "إعادة الالتقاط",
     "removePhoto": "حذف",
+    "access": "الوصول إلى العدّاد",
+    "accessed": "متاح",
     "inaccessible": "غير متاح",
     "comment": "ملاحظة",
     "commentPlaceholder": "ملاحظة (اختياري)",
-    "submit": "حفظ",
-    "resubmit": "إعادة الإرسال",
+    "submit": "إرسال القراءة",
+    "resubmit": "إعادة إرسال القراءة",
     "reset": "مسح",
     "sending": "جارٍ الإرسال…",
     "sent": "تم حفظ القراءة",
@@ -89,21 +416,20 @@
     "noHistory": "لا توجد قراءات.",
     "balance": "الرصيد",
     "upToDate": "لا مستحقات",
-    "overdue_other": "{{count}} فاتورة غير مدفوعة",
-    "searchPlaceholder": "CUST-001",
-    "client": "الزبون",
-    "address": "العنوان",
-    "bills": "الفواتير",
-    "change": "تغيير",
-    "readingDetails": "تفاصيل القراءة",
-    "access": "الوصول",
-    "accessed": "متاح",
     "overdue_one": "فاتورة واحدة غير مدفوعة",
     "overdue_two": "فاتورتان غير مدفوعتان",
     "overdue_few": "{{count}} فواتير غير مدفوعة",
     "overdue_many": "{{count}} فاتورة غير مدفوعة",
+    "overdue_other": "{{count}} فاتورة غير مدفوعة",
     "tabProfile": "الملف الشخصي",
     "role": "الدور"
+  },
+  "clientHome": {
+    "greeting": "مرحباً، {{name}}",
+    "payNow": "ادفع",
+    "viewBills": "فواتيري",
+    "quickActions": "الخدمات",
+    "consumption": "استهلاكي"
   },
   "client": {
     "tabBills": "الفواتير",
@@ -116,23 +442,248 @@
     "noBills": "لا توجد فواتير.",
     "noReadings": "لا توجد قراءات.",
     "period": "الفترة",
+    "date": "التاريخ",
     "dueDate": "تاريخ الاستحقاق",
     "amount": "المبلغ",
     "consumption": "الاستهلاك",
     "index": "المؤشر",
     "invoice": "فاتورة {{number}}",
-    "date": "التاريخ",
     "tabComplaints": "الشكاوى",
     "tabProfile": "الملف الشخصي"
+  },
+  "bills": {
+    "unpaidCount": "فواتير غير مدفوعة",
+    "remaining": "المتبقي: {{amount}} {{currency}}",
+    "hint": "المس فاتورة لعرض التفاصيل أو دفعها أو الاعتراض عليها.",
+    "notFound": "الفاتورة غير موجودة.",
+    "amountDue": "المبلغ المطلوب",
+    "amountPaid": "المبلغ المدفوع",
+    "total": "إجمالي الفاتورة",
+    "paid": "المدفوع",
+    "balance": "المتبقي",
+    "actions": "الإجراءات",
+    "download": "تنزيل",
+    "downloadMock": "سيتوفر تنزيل PDF في الإصدار القادم.",
+    "dispute": "اعتراض",
+    "disputeSubject": "اعتراض على الفاتورة {{number}}",
+    "payHint": "يُقبل الدفع أيضاً في جميع وكالات STE."
+  },
+  "consumption": {
+    "last": "آخر استهلاك",
+    "average": "المتوسط",
+    "currentIndex": "المؤشر الحالي",
+    "lastReading": "آخر قراءة",
+    "chartTitle": "التطوّر الشهري",
+    "history": "سجل القراءات",
+    "hint": "يقوم عون STE بالقراءة كل شهر ثم تتم المصادقة عليها قبل الفوترة."
+  },
+  "services": {
+    "subtitle": "جميع إجراءاتك ببضع لمسات",
+    "groupRequests": "الطلبات",
+    "groupAccount": "حسابي",
+    "groupInfo": "معلومات",
+    "openCount": "{{count}} قيد المعالجة",
+    "reclamation": "تقديم شكوى",
+    "reclamationDesc": "الإبلاغ عن مشكلة في الخدمة أو الفوترة",
+    "complaints": "الشكاوى",
+    "complaintsDesc": "متابعة شكاواي",
+    "installation": "طلب تركيب",
+    "installationDesc": "ربط جديد أو توسعة أو نقل",
+    "requests": "طلباتي",
+    "requestsDesc": "متابعة طلبات التركيب",
+    "verification": "التحقّق",
+    "verificationDesc": "التحقّق من مرجع: طلب، إيصال، فاتورة",
+    "pay": "دفع فاتورة",
+    "payDesc": "محفظة الهاتف أو بطاقة أو وكالة",
+    "selfReading": "قراءة ذاتية",
+    "selfReadingDesc": "إرسال مؤشر عدّادي",
+    "billsDesc": "سجل الفواتير وتفاصيلها",
+    "outages": "الانقطاعات والأشغال",
+    "outagesDesc": "الأعطال والتدخّلات على الشبكة",
+    "agencies": "الوكالات والاتصال",
+    "agenciesDesc": "المواعيد والعناوين والأرقام المفيدة",
+    "notificationsDesc": "تنبيهات ورسائل STE"
+  },
+  "reclamation": {
+    "category": "الفئة",
+    "priority": "الأولوية",
+    "description": "الوصف",
+    "subjectPlaceholder": "مثال: لا مياه منذ يومين",
+    "followHint": "يمكنك متابعة التقدّم في «الشكاوى».",
+    "sentBody": "المرجع {{reference}}. ستتواصل معك فرقنا قريباً."
+  },
+  "complaintsList": {
+    "subtitle": "{{count}} شكوى قيد المعالجة",
+    "new": "شكوى جديدة",
+    "open": "قيد المعالجة",
+    "closed": "مغلقة",
+    "empty": "لا توجد شكاوى.",
+    "notFound": "الشكوى غير موجودة.",
+    "filedOn": "تاريخ التقديم",
+    "updatedOn": "تاريخ التحديث",
+    "progress": "المتابعة",
+    "openNotice": "سيتم إشعارك في كل مرحلة من المعالجة.",
+    "closedNotice": "هذه الشكوى مغلقة. قدّم شكوى جديدة إذا استمرت المشكلة."
+  },
+  "complaintStatus": {
+    "Open": "مفتوحة",
+    "In_Progress": "قيد المعالجة",
+    "Resolved": "تمت المعالجة",
+    "Closed": "مغلقة"
+  },
+  "installation": {
+    "subtitle": "طلب ربط في ثلاث خطوات",
+    "step": {
+      "kind": "الطلب",
+      "address": "العنوان",
+      "review": "الملخص"
+    },
+    "kindLabel": "نوع الطلب",
+    "kind": {
+      "new": "ربط جديد",
+      "extension": "توسعة",
+      "transfer": "نقل"
+    },
+    "usageLabel": "الاستخدام",
+    "usage": {
+      "public": "عمومي / إدارة",
+      "private": "خاص / منزلي",
+      "borne_fontaine": "صنبور عمومي"
+    },
+    "kindHint": "بعد التحقّق، يُرسل إليك عرض سعر قبل التركيب.",
+    "contact": "جهة الاتصال",
+    "fullName": "الاسم الكامل",
+    "address": "عنوان التركيب",
+    "quarter": "الحي",
+    "street": "الشارع",
+    "door": "الباب",
+    "landmark": "معلم قريب",
+    "landmarkPlaceholder": "مثال: مقابل الصيدلية",
+    "missingContact": "أدخل اسمك ورقم هاتف صالحاً.",
+    "missingAddress": "أدخل الحي والشارع على الأقل.",
+    "notes": "ملاحظات",
+    "notesPlaceholder": "معلومات مفيدة للفنّي (اختياري)",
+    "reviewHint": "تجريبي: يُحفظ الطلب على هذا الهاتف فقط.",
+    "submit": "إرسال الطلب",
+    "sentTitle": "تم إرسال الطلب",
+    "sentBody": "المرجع {{reference}}. تابع تقدّمه في «طلباتي»."
+  },
+  "requests": {
+    "subtitle": "{{count}} طلب قيد المعالجة",
+    "new": "طلب جديد",
+    "empty": "لا توجد طلبات تركيب.",
+    "notFound": "الطلب غير موجود.",
+    "amount": "عرض السعر",
+    "progress": "التقدّم",
+    "next": {
+      "OPEN": "تم استلام طلبك وستتحقّق منه مصالحنا.",
+      "VERIFICATION": "يتحقّق عون من إمكانية الربط في عنوانك.",
+      "PAYMENT_PENDING": "عرض السعر جاهز: سدّده في الوكالة لبدء التركيب.",
+      "PAYMENT_COLLECTED": "تم استلام الدفع، ستتم برمجة التركيب.",
+      "PAYMENT_CANCELLED": "تم إلغاء الدفع. اتصل بوكالتك.",
+      "INSTALLATION_PENDING": "سيزور فنّي عنوانك قريباً.",
+      "COMPLETED": "اكتمل التركيب. مرحباً بك في STE!"
+    }
+  },
+  "requestStatus": {
+    "OPEN": "مستلم",
+    "VERIFICATION": "تحقّق",
+    "PAYMENT_PENDING": "عرض سعر للدفع",
+    "PAYMENT_COLLECTED": "مدفوع",
+    "PAYMENT_CANCELLED": "دفع ملغى",
+    "INSTALLATION_PENDING": "تركيب مبرمج",
+    "COMPLETED": "مكتمل"
+  },
+  "verification": {
+    "subtitle": "تحقّق من حالة مرجع STE",
+    "reference": "المرجع",
+    "hint": "طلب (DEM-…)، شكوى (REC-…)، إيصال (PAY-…) أو رقم فاتورة",
+    "samples": "جرّب مع",
+    "notFound": "لا نتائج لـ «{{reference}}».",
+    "type": "النوع",
+    "title": "الموضوع",
+    "status": "الحالة",
+    "updated": "تاريخ التحديث",
+    "verified": "تم التحقّق من المرجع",
+    "paymentTitle": "إيصال دفع",
+    "paymentOk": "تم تسجيل الدفع",
+    "kind": {
+      "request": "طلب تركيب",
+      "complaint": "شكوى",
+      "payment": "إيصال دفع",
+      "bill": "فاتورة"
+    },
+    "footnote": "الطلبات والشكاوى والإيصالات التجريبية محفوظة على هذا الهاتف؛ الفواتير من حسابك لدى STE."
+  },
+  "pay": {
+    "title": "دفع فاتورة",
+    "subtitle": "دفع تجريبي، دون خصم فعلي",
+    "step": {
+      "bill": "الفاتورة",
+      "method": "الوسيلة",
+      "confirm": "التأكيد"
+    },
+    "nothingDue": "ليست لديك فواتير للدفع.",
+    "methodLabel": "وسيلة الدفع",
+    "method": {
+      "airtel": "Airtel Money",
+      "airtelDesc": "الدفع من محفظة Airtel",
+      "moov": "Moov Money",
+      "moovDesc": "الدفع من محفظة Moov",
+      "card": "بطاقة بنكية",
+      "cardDesc": "Visa أو Mastercard",
+      "agency": "في الوكالة",
+      "agencyDesc": "إنشاء إشعار دفع لتقديمه في الشبّاك"
+    },
+    "phoneLabel": "رقم محفظة الهاتف",
+    "phoneHint": "ستصلك طلب تأكيد على هذا الرقم.",
+    "bill": "الفاتورة",
+    "confirm": "تأكيد {{amount}} {{currency}}",
+    "mockNotice": "تجريبي: لا يتم أي دفع فعلي، سيُنشأ إيصال تجريبي.",
+    "successTitle": "تم تأكيد الدفع",
+    "successBody": "احتفظ بالمرجع أدناه، سيُطلب منك في حال الشكوى.",
+    "afterNotice": "ستُحدَّث حالة الفاتورة عند ربط الدفع الإلكتروني بـ STE.",
+    "footnote": "تبقى رسوم مشغّل محفظة الهاتف على عاتقك."
+  },
+  "selfReading": {
+    "subtitle": "أرسل مؤشر عدّادك",
+    "lastIndex": "آخر مؤشر مُصادق عليه",
+    "newIndex": "المؤشر الجديد",
+    "lowerIndex": "المؤشر المُدخل أقل من آخر مؤشر مُصادق عليه ({{previous}}).",
+    "submit": "إرسال قراءتي",
+    "disclaimer": "تساعد قراءتك الذاتية STE على متابعة استهلاكك؛ تبقى القراءة الرسمية من العون.",
+    "sentTitle": "تم إرسال القراءة",
+    "sentBody": "المرجع {{reference}}. شكراً لمساهمتك.",
+    "previous": "آخر قراءاتي الذاتية"
+  },
+  "outages": {
+    "subtitle": "الأعطال والأشغال على الشبكة",
+    "empty": "لا أعطال مُبلّغ عنها.",
+    "until": "حتى {{time}}",
+    "status": {
+      "ongoing": "جارٍ",
+      "planned": "مبرمج",
+      "resolved": "تمت المعالجة"
+    }
+  },
+  "agencies": {
+    "subtitle": "نحن في خدمتك",
+    "contact": "الاتصال",
+    "hotline": "خدمة الزبائن",
+    "hotlineHours": "الاثنين–الجمعة 7:30–15:30",
+    "whatsapp": "واتساب",
+    "email": "البريد الإلكتروني",
+    "list": "وكالاتنا"
   },
   "bill": {
     "PAID": "مدفوعة",
     "UNPAID": "غير مدفوعة",
     "PARTIAL": "جزئية",
-    "OVERDUE": "متأخرة"
+    "OVERDUE": "متأخرة",
+    "PENDING": "مستحقة"
   },
   "status": {
-    "PENDING": "قيد الانتظار",
+    "PENDING": "للقراءة",
     "SUBMITTED": "مُرسَلة",
     "APPROVED": "مُصادق عليها",
     "REJECTED": "مرفوضة",
@@ -146,13 +697,13 @@
     "missingFields": "أدخل الموضوع والوصف.",
     "type_Technical": "تقني",
     "type_Billing": "الفوترة",
+    "type_Service": "خدمة",
     "type_Other": "أخرى",
     "priority_Low": "منخفضة",
     "priority_Medium": "متوسطة",
     "priority_High": "عالية",
-    "subtitle": "أبلغ عن مشكلة إلى الشركة",
-    "type_Service": "خدمة",
     "priority_Critical": "حرجة",
+    "subtitle": "أبلغ عن مشكلة إلى الشركة",
     "unavailable": "تسجيل الشكاوى غير متاح مؤقتاً. حاول لاحقاً."
   }
 }

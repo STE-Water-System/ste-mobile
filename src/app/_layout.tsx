@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   useFonts,
   Inter_400Regular,
+  Inter_500Medium,
   Inter_600SemiBold,
   Inter_700Bold,
   Inter_800ExtraBold,
@@ -23,6 +24,7 @@ const queryClient = new QueryClient({
 const RootLayout = () => {
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
+    Inter_500Medium,
     Inter_600SemiBold,
     Inter_700Bold,
     Inter_800ExtraBold,
@@ -50,6 +52,7 @@ const RootLayout = () => {
       <Stack
         screenOptions={{
           headerShown: false,
+          animation: 'slide_from_right',
           contentStyle: { backgroundColor: colors.background },
         }}
       />

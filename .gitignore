@@ -39,3 +39,9 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# local debugging / tool homes (never commit)
+.dbg/
+.cocoapods-home/
+.trae-home/
+debug-ios-simulator-launch.md

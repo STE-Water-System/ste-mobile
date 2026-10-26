@@ -276,6 +276,26 @@ export const readingDateOf = (reading: any): number =>
 const sortByDateDesc = (readings: any[]): any[] =>
   [...readings].sort((a, b) => readingDateOf(b) - readingDateOf(a));
 
+/** Merge rows coming from several queries, keeping the first occurrence of each id. */
+const dedupeReadings = (readings: any[]): any[] => {
+  const seen = new Set<number>();
+  return readings.filter((reading) => {
+    const id = readingIdOf(reading);
+    if (id === null) return true;
+    if (seen.has(id)) return false;
+    seen.add(id);
+    return true;
+  });
+};
+
+/** Month label of the round a reading belongs to (its readingDate). */
+export const readingMonthOf = (reading: any, locale?: string): string => {
+  const date = new Date(reading?.readingDate || reading?.createdAt || Date.now());
+  if (Number.isNaN(date.getTime())) return '';
+  const text = date.toLocaleDateString(locale || 'fr-FR', { month: 'long', year: 'numeric' });
+  return text.charAt(0).toUpperCase() + text.slice(1);
+};
+
 /** The customer behind a reading, wherever the route happens to nest them. */
 export const customerOf = (reading: any): any =>
   reading?.customer ||
@@ -642,9 +662,22 @@ export const meterApi = {
         const lastApproved = await meterApi.getLastApprovedReading(meter.meterId);
         const approvedThisMonth = currentMonthReadings.find(isApprovedStatus) || null;
 
+        // Open rows of the signed-in agent for this meter, whatever their month.
+        // Root cause of "no reading assigned this month": the round can be
+        // created with a deadline in another calendar month, so filtering on
+        // the current month hid the row and kept the form disabled.
+        let openRows: any[] = [];
+        try {
+          const { items } = await meterApi.getReadings(meter.meterId, { limit: 20, status: READING_STATUS.PENDING });
+          openRows = items;
+        } catch (error: any) {
+          console.warn('Could not load open assignments:', error?.message);
+        }
+        const pool = dedupeReadings([...openRows, ...currentMonthReadings]);
+
         // The row the agent has to complete with PUT /api/meter-readings/:id.
-        const assignment = currentMonthReadings.find(isEditableStatus) || null;
-        const awaitingValidation = currentMonthReadings.find(isAwaitingValidation) || null;
+        const assignment = pool.find(isEditableStatus) || null;
+        const awaitingValidation = pool.find(isAwaitingValidation) || null;
 
         // previousIndex: the value the commercial set on the assignment, else
         // the last APPROVED reading, else an approved reading of the current

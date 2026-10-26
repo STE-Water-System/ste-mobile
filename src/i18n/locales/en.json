@@ -3,28 +3,166 @@
     "loading": "Loading…",
     "cancel": "Cancel",
     "confirm": "Confirm",
+    "continue": "Continue",
+    "done": "Done",
+    "details": "Details",
+    "seeAll": "See all",
     "error": "Error",
     "retry": "Retry",
     "close": "Close",
     "ok": "OK",
+    "all": "All",
     "search": "Search",
     "unit": "m³",
     "currency": "FCFA",
     "sessionExpired": "Session expired. Please sign in again.",
     "forbidden": "Access denied.",
     "offline": "Server unreachable.",
-    "all": "All",
     "back": "Back"
   },
+  "nav": {
+    "home": "Home",
+    "round": "Round",
+    "clients": "Customers",
+    "profile": "Profile",
+    "bills": "Bills",
+    "consumption": "Usage",
+    "services": "Services",
+    "notifications": "Notifications"
+  },
+  "mock": {
+    "banner": "Demo · sample data",
+    "estimate": "Estimate",
+    "timeline": {
+      "received": "Request received",
+      "inReview": "Under review",
+      "technicianAssigned": "Technician assigned",
+      "resolved": "Resolved",
+      "closed": "Closed"
+    },
+    "notif": {
+      "billReady": {
+        "title": "Your October bill is ready",
+        "body": "Check your consumption details and pay before the due date."
+      },
+      "outage": {
+        "title": "Planned outage in your area",
+        "body": "Network maintenance; water will be restored by the end of the day."
+      },
+      "complaintUpdate": {
+        "title": "Your complaint is moving",
+        "body": "A technician has been assigned to file REC-2026-0117."
+      },
+      "paymentReceived": {
+        "title": "Payment received",
+        "body": "Thank you, your September payment has been recorded."
+      },
+      "tip": {
+        "title": "Tip of the month",
+        "body": "A dripping tap can waste up to 120 litres a day."
+      }
+    },
+    "agentNotif": {
+      "roundAssigned": {
+        "title": "New round assigned",
+        "body": "Your round for the month is ready: 42 meters to read."
+      },
+      "readingRejected": {
+        "title": "Reading rejected",
+        "body": "The reading for meter MTR-00812 was sent back: photo unreadable."
+      },
+      "taskAssigned": {
+        "title": "Intervention assigned",
+        "body": "A disconnection is scheduled in Moursal for today."
+      },
+      "maintenance": {
+        "title": "App maintenance",
+        "body": "An update ships this weekend; remember to sync your readings."
+      }
+    },
+    "announcement": {
+      "a1": {
+        "title": "Readings close on the 28th",
+        "body": "All readings for the month must be sent before the 28th for billing."
+      },
+      "a2": {
+        "title": "New round books",
+        "body": "The Dembé and Chagoua sectors were reorganised; check your route."
+      }
+    },
+    "outage": {
+      "moursal": {
+        "title": "Works on the main pipe",
+        "body": "Valve replacement, supply interrupted from 8 am to 2 pm."
+      },
+      "farcha": {
+        "title": "Low pressure",
+        "body": "Incident at the pumping station, service coming back gradually."
+      },
+      "chagoua": {
+        "title": "Leak repaired",
+        "body": "The leak reported on street 4502 has been fixed, service restored."
+      }
+    },
+    "complaint": {
+      "c1": {
+        "subject": "Very low pressure in the morning"
+      },
+      "c2": {
+        "subject": "September bill amount disputed"
+      },
+      "c3": {
+        "subject": "Reading agent did not come"
+      }
+    },
+    "task": {
+      "note": {
+        "overdue3": "3 unpaid bills. Present the disconnection notice before acting.",
+        "overdue2": "2 unpaid bills. Offer a payment plan if the customer is present.",
+        "paid": "Paid yesterday at the agency. Restore service.",
+        "suspectedLeak": "Abnormal consumption for two months; check the meter and fittings."
+      }
+    },
+    "tip": {
+      "t1": {
+        "title": "Turn off the tap",
+        "body": "While brushing teeth or washing up, that is up to 10 litres saved."
+      },
+      "t2": {
+        "title": "Hunt for leaks",
+        "body": "Read your meter at night and in the morning without using water: it should not move."
+      },
+      "t3": {
+        "title": "Track your index",
+        "body": "A monthly self-reading avoids surprises on the bill."
+      },
+      "t4": {
+        "title": "Water in the evening",
+        "body": "Less evaporates and your plants get more of it."
+      }
+    },
+    "agency": {
+      "hours": {
+        "standard": "Mon–Fri 7:30–15:30",
+        "extended": "Mon–Sat 7:30–17:00"
+      }
+    }
+  },
   "auth": {
+    "tagline": "Société Tchadienne des Eaux",
     "clientTab": "Customer",
     "agentTab": "Agent",
+    "clientTitle": "Access my account",
+    "clientSubtitle": "Your bills, your usage and your requests.",
+    "agentTitle": "Agent sign-in",
+    "agentSubtitle": "Credentials provided by STE, then the code from your authenticator app.",
     "clientCode": "Customer code",
     "phone": "Phone",
     "email": "Email",
     "password": "Password",
     "show": "Show",
     "hide": "Hide",
+    "otpHint": "A two-step verification will follow.",
     "clientSubmit": "View my account",
     "agentSubmit": "Sign in",
     "helpLink": "Where is my customer code?",
@@ -37,18 +175,200 @@
     "missingAgent": "Enter your email and password.",
     "notFound": "No account matches these details.",
     "failed": "Sign-in failed.",
-    "footer": "© {{year}} STE"
+    "adminBlocked": "This administrator account cannot use the mobile app.",
+    "footer": "© {{year}} STE",
+    "phoneHint": "Number registered with STE, e.g. 66 00 00 00"
+  },
+  "otp": {
+    "title": "Verification",
+    "heading": "Authenticator app code",
+    "lead": "Enter the 6-digit code generated by your app (Google Authenticator, Microsoft Authenticator, Authy…) for {{email}}.",
+    "rotates": "Code changes in {{seconds}} s",
+    "verify": "Verify",
+    "incomplete": "Enter all 6 digits of the code.",
+    "invalid": "Incorrect or expired code. Try again with the code shown.",
+    "expired": "The sign-in expired, please start again.",
+    "noAccess": "I cannot access my app",
+    "helpTitle": "Authenticator app",
+    "helpBody": "Contact your STE administrator to reset two-factor authentication on your account.",
+    "demoTitle": "Demo mode",
+    "demoBody": "No verification server is connected yet. Use code {{code}} to continue."
   },
   "settings": {
     "logout": "Sign out",
     "logoutConfirm": "Do you want to sign out?"
+  },
+  "agentHome": {
+    "greeting": "Hello, {{name}}",
+    "progressTitle": "Round progress",
+    "progressCount": "{{done}} / {{total}} readings sent",
+    "assigned": "Assigned",
+    "todo": "To read",
+    "sent": "Sent",
+    "approved": "Approved",
+    "rejectedHint": "{{count}} to correct",
+    "quickActions": "Quick actions",
+    "tileRound": "My round",
+    "tileLookup": "Find a customer",
+    "tileTasks": "Interventions",
+    "tileIncident": "Report an issue",
+    "tileRoute": "Route",
+    "tileHistory": "History",
+    "nextUp": "Up next",
+    "allDoneTitle": "Round complete",
+    "allDoneText": "All your readings have been sent. Nice work!",
+    "announcements": "Announcements",
+    "syncOk": "Data synced",
+    "syncAt": "Last refresh: {{time}}",
+    "syncPull": "Pull down to refresh."
+  },
+  "round": {
+    "title": "My round",
+    "searchPlaceholder": "Customer code (e.g. CUST-001)",
+    "progress": "{{done}} of {{total}} readings sent",
+    "rejectedHint": "{{count}} rejected reading(s) to correct first",
+    "emptyTitle": "No round",
+    "emptyFilter": "No reading matches this filter.",
+    "filter": {
+      "all": "All",
+      "todo": "To do",
+      "rejected": "Rejected",
+      "sent": "Sent",
+      "approved": "Approved"
+    }
+  },
+  "reading": {
+    "title": "Reading",
+    "assignedFor": "Reading date",
+    "indexHint": "Index shown on the meter, in {{unit}}",
+    "inaccessibleHint": "Meter not accessible: the previous index is kept and consumption is zero.",
+    "savedTitle": "Reading sent",
+    "monthOf": "Reading for {{month}}",
+    "month": "Reading month",
+    "deadline": "Deadline"
+  },
+  "clients": {
+    "subtitle": "A customer's situation in the field",
+    "emptyTitle": "Find a customer",
+    "readMeter": "Read meter",
+    "reportIncident": "Report",
+    "category": "Category",
+    "meters": "{{count}} meter(s)",
+    "hint": "Amounts come from STE billing. Payments are taken at the agency or in the customer app."
+  },
+  "tasks": {
+    "title": "Interventions",
+    "subtitle": "{{count}} intervention(s) to handle",
+    "empty": "No intervention for this filter.",
+    "notFound": "Intervention not found.",
+    "filter": {
+      "open": "To handle",
+      "done": "Done",
+      "all": "All"
+    },
+    "kind": {
+      "disconnection": "Disconnection",
+      "reconnection": "Reconnection",
+      "inspection": "Inspection",
+      "meter_replacement": "Meter replacement"
+    },
+    "status": {
+      "todo": "To do",
+      "in_progress": "In progress",
+      "done": "Done",
+      "blocked": "Blocked"
+    },
+    "priorityHigh": "Priority",
+    "priority": "Priority",
+    "priorityLabel": {
+      "low": "Low",
+      "normal": "Normal",
+      "high": "High"
+    },
+    "due": "Due",
+    "amountDue": "Amount due",
+    "actions": "Actions",
+    "start": "Start intervention",
+    "finish": "Finish intervention",
+    "finishTitle": "Finish",
+    "finishBody": "Confirm that the intervention is complete?",
+    "resume": "Resume",
+    "block": "Cannot intervene",
+    "blockTitle": "Intervention blocked",
+    "blockBody": "Flag the intervention as impossible (customer absent, access closed…). It will be rescheduled.",
+    "blockConfirm": "Flag",
+    "doneNotice": "Intervention completed and recorded.",
+    "call": "Call customer",
+    "callBody": "Calling {{name}} will be available once telephony is integrated."
+  },
+  "incident": {
+    "title": "Report an issue",
+    "subtitle": "Leak, broken meter, illegal connection…",
+    "kind": "Issue type",
+    "type": {
+      "leak": "Water leak",
+      "brokenMeter": "Faulty meter",
+      "illegalConnection": "Illegal connection",
+      "damagedCover": "Damaged chamber",
+      "noWater": "No water",
+      "other": "Other"
+    },
+    "optional": "Optional",
+    "description": "Description",
+    "descriptionPlaceholder": "Describe what you see on site",
+    "tooShort": "Describe the issue in a few words (at least 10 characters).",
+    "addPhoto": "Add a photo",
+    "submit": "Send report",
+    "sentTitle": "Report sent",
+    "sentBody": "Reference {{reference}}. The technical team will be informed."
+  },
+  "route": {
+    "title": "Today's route",
+    "subtitle": "Remaining readings, grouped by area",
+    "empty": "No reading left, your route is empty.",
+    "stops": "Stops",
+    "areas": "Areas",
+    "estimate": "Duration",
+    "hours": "{{hours}} h {{minutes}} min",
+    "minutes": "{{minutes}} min",
+    "stopCount": "{{count}} stop(s)",
+    "hint": "Order follows urgency: rejected readings first, then by area. Tap a stop to record the reading."
+  },
+  "history": {
+    "title": "This month's history",
+    "empty": "No reading sent yet."
+  },
+  "notifications": {
+    "unread": "{{count}} unread",
+    "allRead": "All caught up",
+    "markAll": "Mark all as read",
+    "empty": "No notifications."
+  },
+  "profile": {
+    "thisMonth": "This month",
+    "account": "My account",
+    "meters": "Meters",
+    "preferences": "Preferences",
+    "notifications": "Notifications",
+    "notificationsDesc": "New round, rejected readings, interventions",
+    "notificationsDescClient": "Bills, outages, request updates",
+    "language": "Language",
+    "languageDesc": "Français · English · العربية",
+    "support": "Help",
+    "callSupport": "STE support",
+    "callSupportBody": "Call {{phone}} Monday to Friday.",
+    "about": "About",
+    "version": "Version {{version}}",
+    "chooseLanguage": "Choose a language",
+    "languageRestart": "The reading direction changes: the app will restart to apply the language."
   },
   "agent": {
     "tabReading": "Reading",
     "tabClients": "Customers",
     "greeting": "Hello",
     "searchLabel": "Customer code",
-    "searchHint": "Enter a customer code to start.",
+    "searchPlaceholder": "CUST-001",
+    "searchHint": "Enter a customer code to see their situation.",
     "round": "My round",
     "roundEmpty": "No reading is assigned to you at the moment.",
     "roundTotal": "Assigned",
@@ -56,6 +376,11 @@
     "roundSent": "Sent",
     "notFound": "Customer not found.",
     "noMeter": "No meter linked to this customer.",
+    "client": "Customer",
+    "address": "Address",
+    "bills": "Bills",
+    "change": "Change",
+    "readingDetails": "Reading details",
     "meter": "Meter",
     "meterCount": "{{count}} meters",
     "previousIndex": "Previous index",
@@ -63,13 +388,15 @@
     "consumption": "Consumption",
     "photo": "Meter photo",
     "takePhoto": "Take a photo",
-    "retakePhoto": "Retake",
+    "retakePhoto": "Retake photo",
     "removePhoto": "Remove",
+    "access": "Meter access",
+    "accessed": "Accessible",
     "inaccessible": "Not accessible",
     "comment": "Comment",
     "commentPlaceholder": "Note (optional)",
-    "submit": "Save",
-    "resubmit": "Resend",
+    "submit": "Send reading",
+    "resubmit": "Resend reading",
     "reset": "Clear",
     "sending": "Sending…",
     "sent": "Reading saved",
@@ -89,18 +416,17 @@
     "noHistory": "No readings.",
     "balance": "Balance",
     "upToDate": "Up to date",
-    "overdue_other": "{{count}} unpaid bills",
-    "searchPlaceholder": "CUST-001",
-    "client": "Customer",
-    "address": "Address",
-    "bills": "Bills",
-    "change": "Change",
-    "readingDetails": "Reading details",
-    "access": "Access",
-    "accessed": "Accessible",
     "overdue_one": "{{count}} unpaid bill",
+    "overdue_other": "{{count}} unpaid bills",
     "tabProfile": "Profile",
     "role": "Role"
+  },
+  "clientHome": {
+    "greeting": "Hello, {{name}}",
+    "payNow": "Pay",
+    "viewBills": "My bills",
+    "quickActions": "Services",
+    "consumption": "My usage"
   },
   "client": {
     "tabBills": "Bills",
@@ -113,24 +439,249 @@
     "noBills": "No bills.",
     "noReadings": "No readings.",
     "period": "Period",
+    "date": "Date",
     "dueDate": "Due date",
     "amount": "Amount",
     "consumption": "Consumption",
     "index": "Index",
     "invoice": "Bill {{number}}",
-    "date": "Date",
     "tabComplaints": "Complaints",
     "tabProfile": "Profile"
+  },
+  "bills": {
+    "unpaidCount": "Unpaid bills",
+    "remaining": "Remaining: {{amount}} {{currency}}",
+    "hint": "Tap a bill to see details, pay it or dispute it.",
+    "notFound": "Bill not found.",
+    "amountDue": "Amount due",
+    "amountPaid": "Amount paid",
+    "total": "Total billed",
+    "paid": "Already paid",
+    "balance": "Remaining",
+    "actions": "Actions",
+    "download": "Download",
+    "downloadMock": "PDF download will be available in the next release.",
+    "dispute": "Dispute",
+    "disputeSubject": "Dispute of bill {{number}}",
+    "payHint": "Payments are also accepted at every STE agency."
+  },
+  "consumption": {
+    "last": "Last usage",
+    "average": "Average",
+    "currentIndex": "Current index",
+    "lastReading": "Last reading",
+    "chartTitle": "Monthly trend",
+    "history": "Reading history",
+    "hint": "Readings are taken every month by an STE agent and validated before billing."
+  },
+  "services": {
+    "subtitle": "Every request a few taps away",
+    "groupRequests": "Requests",
+    "groupAccount": "My account",
+    "groupInfo": "Information",
+    "openCount": "{{count}} in progress",
+    "reclamation": "File a complaint",
+    "reclamationDesc": "Report a service or billing problem",
+    "complaints": "Complaints",
+    "complaintsDesc": "Track my complaints",
+    "installation": "Installation request",
+    "installationDesc": "New connection, extension or transfer",
+    "requests": "My requests",
+    "requestsDesc": "Track my installation requests",
+    "verification": "Verification",
+    "verificationDesc": "Check a reference: request, receipt, bill",
+    "pay": "Pay a bill",
+    "payDesc": "Mobile money, card or agency",
+    "selfReading": "Self-reading",
+    "selfReadingDesc": "Send my meter index",
+    "billsDesc": "Bill history and details",
+    "outages": "Outages & works",
+    "outagesDesc": "Incidents and works on the network",
+    "agencies": "Agencies & contact",
+    "agenciesDesc": "Opening hours, addresses and useful numbers",
+    "notificationsDesc": "Alerts and messages from STE"
+  },
+  "reclamation": {
+    "category": "Category",
+    "priority": "Priority",
+    "description": "Description",
+    "subjectPlaceholder": "e.g. No water for two days",
+    "followHint": "You can follow progress under “Complaints”.",
+    "sentBody": "Reference {{reference}}. Our teams will get back to you shortly."
+  },
+  "complaintsList": {
+    "subtitle": "{{count}} complaint(s) in progress",
+    "new": "New complaint",
+    "open": "In progress",
+    "closed": "Closed",
+    "empty": "No complaints.",
+    "notFound": "Complaint not found.",
+    "filedOn": "Filed on",
+    "updatedOn": "Updated on",
+    "progress": "Progress",
+    "openNotice": "You will be notified at each step.",
+    "closedNotice": "This complaint is closed. File a new one if the problem persists."
+  },
+  "complaintStatus": {
+    "Open": "Open",
+    "In_Progress": "In progress",
+    "Resolved": "Resolved",
+    "Closed": "Closed"
+  },
+  "installation": {
+    "subtitle": "Connection request in three steps",
+    "step": {
+      "kind": "Request",
+      "address": "Address",
+      "review": "Summary"
+    },
+    "kindLabel": "Request type",
+    "kind": {
+      "new": "New connection",
+      "extension": "Extension",
+      "transfer": "Transfer"
+    },
+    "usageLabel": "Usage",
+    "usage": {
+      "public": "Public / administration",
+      "private": "Private / household",
+      "borne_fontaine": "Standpipe (borne fontaine)"
+    },
+    "kindHint": "After verification, a quote is sent to you before installation.",
+    "contact": "Contact",
+    "fullName": "Full name",
+    "address": "Installation address",
+    "quarter": "Neighbourhood",
+    "street": "Street",
+    "door": "Door",
+    "landmark": "Landmark",
+    "landmarkPlaceholder": "e.g. opposite the pharmacy",
+    "missingContact": "Enter your name and a valid phone number.",
+    "missingAddress": "Enter at least the neighbourhood and the street.",
+    "notes": "Notes",
+    "notesPlaceholder": "Useful information for the technician (optional)",
+    "reviewHint": "Demo: the request is stored on this phone only.",
+    "submit": "Send request",
+    "sentTitle": "Request sent",
+    "sentBody": "Reference {{reference}}. Track its progress under “My requests”."
+  },
+  "requests": {
+    "subtitle": "{{count}} request(s) in progress",
+    "new": "New request",
+    "empty": "No installation request.",
+    "notFound": "Request not found.",
+    "amount": "Quote",
+    "progress": "Progress",
+    "next": {
+      "OPEN": "Your request has been received and will be checked by our services.",
+      "VERIFICATION": "An agent is checking whether a connection is feasible at your address.",
+      "PAYMENT_PENDING": "The quote is ready: pay it at the agency to start the installation.",
+      "PAYMENT_COLLECTED": "Payment received, the installation will be scheduled.",
+      "PAYMENT_CANCELLED": "The payment was cancelled. Contact your agency.",
+      "INSTALLATION_PENDING": "A technician will visit your address soon.",
+      "COMPLETED": "Installation complete. Welcome to STE!"
+    }
+  },
+  "requestStatus": {
+    "OPEN": "Received",
+    "VERIFICATION": "Verification",
+    "PAYMENT_PENDING": "Quote to pay",
+    "PAYMENT_COLLECTED": "Paid",
+    "PAYMENT_CANCELLED": "Payment cancelled",
+    "INSTALLATION_PENDING": "Installation scheduled",
+    "COMPLETED": "Completed"
+  },
+  "verification": {
+    "subtitle": "Check the status of an STE reference",
+    "reference": "Reference",
+    "hint": "Request (DEM-…), complaint (REC-…), receipt (PAY-…) or bill number",
+    "samples": "Try with",
+    "notFound": "Nothing found for “{{reference}}”.",
+    "type": "Type",
+    "title": "Subject",
+    "status": "Status",
+    "updated": "Updated on",
+    "verified": "Reference verified",
+    "paymentTitle": "Payment receipt",
+    "paymentOk": "Payment recorded",
+    "kind": {
+      "request": "Installation request",
+      "complaint": "Complaint",
+      "payment": "Payment receipt",
+      "bill": "Bill"
+    },
+    "footnote": "Demo requests, complaints and receipts are stored on this phone; bills come from your STE account."
+  },
+  "pay": {
+    "title": "Pay a bill",
+    "subtitle": "Simulated payment, nothing is debited",
+    "step": {
+      "bill": "Bill",
+      "method": "Method",
+      "confirm": "Confirm"
+    },
+    "nothingDue": "You have no bill to pay.",
+    "methodLabel": "Payment method",
+    "method": {
+      "airtel": "Airtel Money",
+      "airtelDesc": "Pay from your Airtel wallet",
+      "moov": "Moov Money",
+      "moovDesc": "Pay from your Moov wallet",
+      "card": "Bank card",
+      "cardDesc": "Visa or Mastercard",
+      "agency": "At the agency",
+      "agencyDesc": "Generate a payment slip to present at the counter"
+    },
+    "phoneLabel": "Mobile money number",
+    "phoneHint": "You will receive a confirmation request on this number.",
+    "bill": "Bill",
+    "confirm": "Confirm {{amount}} {{currency}}",
+    "mockNotice": "Demo: no real payment is made; a demo receipt will be generated.",
+    "successTitle": "Payment confirmed",
+    "successBody": "Keep the reference below; it will be asked for in case of a complaint.",
+    "afterNotice": "The bill status will update once online payment is connected to STE.",
+    "footnote": "Any mobile money operator fees remain at your charge."
+  },
+  "selfReading": {
+    "subtitle": "Send your meter index",
+    "lastIndex": "Last validated index",
+    "newIndex": "New index",
+    "lowerIndex": "The index entered is lower than the last validated index ({{previous}}).",
+    "submit": "Send my reading",
+    "disclaimer": "Your self-reading helps STE follow your usage; the official reading is still taken by the agent.",
+    "sentTitle": "Reading sent",
+    "sentBody": "Reference {{reference}}. Thank you for your contribution.",
+    "previous": "My latest self-readings"
+  },
+  "outages": {
+    "subtitle": "Incidents and works on the network",
+    "empty": "No incident reported.",
+    "until": "until {{time}}",
+    "status": {
+      "ongoing": "Ongoing",
+      "planned": "Planned",
+      "resolved": "Resolved"
+    }
+  },
+  "agencies": {
+    "subtitle": "We are here to help",
+    "contact": "Contact",
+    "hotline": "Customer service",
+    "hotlineHours": "Mon–Fri 7:30–15:30",
+    "whatsapp": "WhatsApp",
+    "email": "Email",
+    "list": "Our agencies"
   },
   "bill": {
     "PAID": "Paid",
     "UNPAID": "Unpaid",
     "PARTIAL": "Partial",
-    "OVERDUE": "Overdue"
+    "OVERDUE": "Overdue",
+    "PENDING": "Due"
   },
   "status": {
-    "PENDING": "Pending",
-    "SUBMITTED": "Submitted",
+    "PENDING": "To read",
+    "SUBMITTED": "Sent",
     "APPROVED": "Approved",
     "REJECTED": "Rejected",
     "RE_SUBMITED": "Resent"
@@ -143,13 +694,13 @@
     "missingFields": "Enter a subject and a description.",
     "type_Technical": "Technical",
     "type_Billing": "Billing",
+    "type_Service": "Service",
     "type_Other": "Other",
     "priority_Low": "Low",
     "priority_Medium": "Medium",
     "priority_High": "High",
-    "subtitle": "Report a problem to STE",
-    "type_Service": "Service",
     "priority_Critical": "Critical",
+    "subtitle": "Report a problem to STE",
     "unavailable": "Filing complaints is temporarily unavailable. Please try again later."
   }
 }

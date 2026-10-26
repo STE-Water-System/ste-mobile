@@ -3,6 +3,10 @@
     "loading": "Chargement…",
     "cancel": "Annuler",
     "confirm": "Confirmer",
+    "continue": "Continuer",
+    "done": "Terminé",
+    "details": "Détails",
+    "seeAll": "Tout voir",
     "error": "Erreur",
     "retry": "Réessayer",
     "close": "Fermer",
@@ -16,15 +20,149 @@
     "offline": "Serveur injoignable.",
     "back": "Retour"
   },
+  "nav": {
+    "home": "Accueil",
+    "round": "Tournée",
+    "clients": "Clients",
+    "profile": "Profil",
+    "bills": "Factures",
+    "consumption": "Conso",
+    "services": "Services",
+    "notifications": "Notifications"
+  },
+  "mock": {
+    "banner": "Démo · données fictives",
+    "estimate": "Estimation",
+    "timeline": {
+      "received": "Demande reçue",
+      "inReview": "En cours d'examen",
+      "technicianAssigned": "Technicien affecté",
+      "resolved": "Résolue",
+      "closed": "Clôturée"
+    },
+    "notif": {
+      "billReady": {
+        "title": "Votre facture d'octobre est disponible",
+        "body": "Consultez le détail de votre consommation et réglez avant l'échéance."
+      },
+      "outage": {
+        "title": "Coupure programmée dans votre quartier",
+        "body": "Travaux de maintenance sur le réseau, l'eau sera rétablie en fin de journée."
+      },
+      "complaintUpdate": {
+        "title": "Votre réclamation avance",
+        "body": "Un technicien a été affecté à votre dossier REC-2026-0117."
+      },
+      "paymentReceived": {
+        "title": "Paiement reçu",
+        "body": "Merci, votre règlement de septembre a bien été enregistré."
+      },
+      "tip": {
+        "title": "Astuce du mois",
+        "body": "Un robinet qui goutte peut gaspiller jusqu'à 120 litres par jour."
+      }
+    },
+    "agentNotif": {
+      "roundAssigned": {
+        "title": "Nouvelle tournée affectée",
+        "body": "Votre tournée du mois est disponible, 42 compteurs à relever."
+      },
+      "readingRejected": {
+        "title": "Relevé rejeté",
+        "body": "Le relevé du compteur MTR-00812 a été renvoyé pour correction : photo illisible."
+      },
+      "taskAssigned": {
+        "title": "Intervention affectée",
+        "body": "Une coupure est programmée à Moursal pour aujourd'hui."
+      },
+      "maintenance": {
+        "title": "Maintenance de l'application",
+        "body": "Une mise à jour sera déployée ce week-end, pensez à synchroniser vos relevés."
+      }
+    },
+    "announcement": {
+      "a1": {
+        "title": "Clôture des relevés le 28",
+        "body": "Tous les relevés du mois doivent être envoyés avant le 28 pour la facturation."
+      },
+      "a2": {
+        "title": "Nouveaux carnets de tournée",
+        "body": "Les secteurs de Dembé et Chagoua ont été réorganisés, vérifiez votre itinéraire."
+      }
+    },
+    "outage": {
+      "moursal": {
+        "title": "Travaux sur la conduite principale",
+        "body": "Remplacement d'une vanne, interruption de 8h à 14h."
+      },
+      "farcha": {
+        "title": "Baisse de pression",
+        "body": "Incident sur la station de pompage, rétablissement progressif en cours."
+      },
+      "chagoua": {
+        "title": "Fuite réparée",
+        "body": "La fuite signalée rue 4502 a été réparée, service rétabli."
+      }
+    },
+    "complaint": {
+      "c1": {
+        "subject": "Pression très faible le matin"
+      },
+      "c2": {
+        "subject": "Montant de la facture de septembre contesté"
+      },
+      "c3": {
+        "subject": "Agent de relevé non passé"
+      }
+    },
+    "task": {
+      "note": {
+        "overdue3": "3 factures impayées. Présenter l'avis de coupure avant intervention.",
+        "overdue2": "2 factures impayées. Proposer un échéancier si le client est présent.",
+        "paid": "Règlement effectué hier en agence. Rétablir le service.",
+        "suspectedLeak": "Consommation anormale depuis deux mois, vérifier le compteur et les raccords."
+      }
+    },
+    "tip": {
+      "t1": {
+        "title": "Fermez le robinet",
+        "body": "Pendant le brossage des dents ou la vaisselle, c'est jusqu'à 10 litres économisés."
+      },
+      "t2": {
+        "title": "Traquez les fuites",
+        "body": "Relevez votre compteur le soir et le matin sans consommer : il ne doit pas bouger."
+      },
+      "t3": {
+        "title": "Suivez votre index",
+        "body": "Un auto-relevé mensuel vous évite les mauvaises surprises sur la facture."
+      },
+      "t4": {
+        "title": "Arrosez le soir",
+        "body": "L'eau s'évapore moins et vos plantes en profitent davantage."
+      }
+    },
+    "agency": {
+      "hours": {
+        "standard": "Lun–Ven 7h30–15h30",
+        "extended": "Lun–Sam 7h30–17h00"
+      }
+    }
+  },
   "auth": {
+    "tagline": "Société Tchadienne des Eaux",
     "clientTab": "Espace Client",
     "agentTab": "Espace Agent",
+    "clientTitle": "Accéder à mon compte",
+    "clientSubtitle": "Vos factures, votre consommation et vos demandes.",
+    "agentTitle": "Connexion agent",
+    "agentSubtitle": "Identifiants fournis par la STE, puis code de votre application d'authentification.",
     "clientCode": "Code Client",
     "phone": "Téléphone",
     "email": "Email",
     "password": "Mot de passe",
     "show": "Afficher",
     "hide": "Masquer",
+    "otpHint": "Une vérification en deux étapes suivra.",
     "clientSubmit": "Consulter mon compte",
     "agentSubmit": "Se connecter",
     "helpLink": "Où trouver mon code client ?",
@@ -37,11 +175,192 @@
     "missingAgent": "Renseignez votre email et votre mot de passe.",
     "notFound": "Aucun compte ne correspond à ces informations.",
     "failed": "Connexion impossible.",
-    "footer": "© {{year}} STE"
+    "adminBlocked": "Ce compte administrateur n'a pas accès à l'application mobile.",
+    "footer": "© {{year}} STE",
+    "phoneHint": "Numéro enregistré à la STE, ex. 66 00 00 00"
+  },
+  "otp": {
+    "title": "Vérification",
+    "heading": "Code de l'application d'authentification",
+    "lead": "Saisissez le code à 6 chiffres généré par votre application (Google Authenticator, Microsoft Authenticator, Authy…) pour {{email}}.",
+    "rotates": "Le code change dans {{seconds}} s",
+    "verify": "Vérifier",
+    "incomplete": "Saisissez les 6 chiffres du code.",
+    "invalid": "Code incorrect ou expiré. Réessayez avec le code affiché.",
+    "expired": "La connexion a expiré, recommencez.",
+    "noAccess": "Je n'ai pas accès à mon application",
+    "helpTitle": "Application d'authentification",
+    "helpBody": "Contactez votre administrateur STE pour réinitialiser la double authentification de votre compte.",
+    "demoTitle": "Mode démonstration",
+    "demoBody": "Aucun serveur de vérification n'est encore relié. Utilisez le code {{code}} pour continuer."
   },
   "settings": {
     "logout": "Déconnexion",
     "logoutConfirm": "Voulez-vous vous déconnecter ?"
+  },
+  "agentHome": {
+    "greeting": "Bonjour, {{name}}",
+    "progressTitle": "Avancement de la tournée",
+    "progressCount": "{{done}} / {{total}} relevés envoyés",
+    "assigned": "Affectés",
+    "todo": "À relever",
+    "sent": "Envoyés",
+    "approved": "Validés",
+    "rejectedHint": "{{count}} à corriger",
+    "quickActions": "Actions rapides",
+    "tileRound": "Ma tournée",
+    "tileLookup": "Rechercher un client",
+    "tileTasks": "Interventions",
+    "tileIncident": "Signaler une anomalie",
+    "tileRoute": "Itinéraire",
+    "tileHistory": "Historique",
+    "nextUp": "À faire maintenant",
+    "allDoneTitle": "Tournée terminée",
+    "allDoneText": "Tous vos relevés ont été envoyés. Beau travail !",
+    "announcements": "Annonces",
+    "syncOk": "Données synchronisées",
+    "syncAt": "Dernière actualisation : {{time}}",
+    "syncPull": "Tirez vers le bas pour actualiser."
+  },
+  "round": {
+    "title": "Ma tournée",
+    "searchPlaceholder": "Code client (ex. CUST-001)",
+    "progress": "{{done}} sur {{total}} relevés envoyés",
+    "rejectedHint": "{{count}} relevé(s) rejeté(s) à corriger en priorité",
+    "emptyTitle": "Aucune tournée",
+    "emptyFilter": "Aucun relevé ne correspond à ce filtre.",
+    "filter": {
+      "all": "Tous",
+      "todo": "À faire",
+      "rejected": "Rejetés",
+      "sent": "Envoyés",
+      "approved": "Validés"
+    }
+  },
+  "reading": {
+    "title": "Relevé",
+    "assignedFor": "Relevé du",
+    "indexHint": "Index affiché sur le compteur, en {{unit}}",
+    "inaccessibleHint": "Compteur non accessible : l'index précédent est conservé et la consommation est nulle.",
+    "savedTitle": "Relevé envoyé",
+    "monthOf": "Relevé du mois de {{month}}",
+    "month": "Mois de relève",
+    "deadline": "Date limite"
+  },
+  "clients": {
+    "subtitle": "Situation d'un client sur le terrain",
+    "emptyTitle": "Rechercher un client",
+    "readMeter": "Relever",
+    "reportIncident": "Signaler",
+    "category": "Catégorie",
+    "meters": "{{count}} compteur(s)",
+    "hint": "Les montants affichés proviennent de la facturation STE. Les encaissements se font en agence ou via l'application client."
+  },
+  "tasks": {
+    "title": "Interventions",
+    "subtitle": "{{count}} intervention(s) à traiter",
+    "empty": "Aucune intervention pour ce filtre.",
+    "notFound": "Intervention introuvable.",
+    "filter": {
+      "open": "À traiter",
+      "done": "Terminées",
+      "all": "Toutes"
+    },
+    "kind": {
+      "disconnection": "Coupure",
+      "reconnection": "Rétablissement",
+      "inspection": "Inspection",
+      "meter_replacement": "Remplacement de compteur"
+    },
+    "status": {
+      "todo": "À faire",
+      "in_progress": "En cours",
+      "done": "Terminée",
+      "blocked": "Bloquée"
+    },
+    "priorityHigh": "Prioritaire",
+    "priority": "Priorité",
+    "priorityLabel": {
+      "low": "Basse",
+      "normal": "Normale",
+      "high": "Haute"
+    },
+    "due": "Échéance",
+    "amountDue": "Montant dû",
+    "actions": "Actions",
+    "start": "Commencer l'intervention",
+    "finish": "Terminer l'intervention",
+    "finishTitle": "Terminer",
+    "finishBody": "Confirmez-vous que l'intervention est réalisée ?",
+    "resume": "Reprendre",
+    "block": "Impossible d'intervenir",
+    "blockTitle": "Intervention bloquée",
+    "blockBody": "Signalez l'intervention comme impossible (client absent, accès fermé…). Elle sera reprogrammée.",
+    "blockConfirm": "Signaler",
+    "doneNotice": "Intervention terminée et enregistrée.",
+    "call": "Appeler le client",
+    "callBody": "L'appel vers {{name}} sera disponible une fois la téléphonie intégrée."
+  },
+  "incident": {
+    "title": "Signaler une anomalie",
+    "subtitle": "Fuite, compteur cassé, branchement illégal…",
+    "kind": "Type d'anomalie",
+    "type": {
+      "leak": "Fuite d'eau",
+      "brokenMeter": "Compteur défectueux",
+      "illegalConnection": "Branchement illégal",
+      "damagedCover": "Regard endommagé",
+      "noWater": "Absence d'eau",
+      "other": "Autre"
+    },
+    "optional": "Optionnel",
+    "description": "Description",
+    "descriptionPlaceholder": "Décrivez ce que vous constatez sur place",
+    "tooShort": "Décrivez l'anomalie en quelques mots (10 caractères minimum).",
+    "addPhoto": "Ajouter une photo",
+    "submit": "Envoyer le signalement",
+    "sentTitle": "Signalement envoyé",
+    "sentBody": "Référence {{reference}}. L'équipe technique sera informée."
+  },
+  "route": {
+    "title": "Itinéraire du jour",
+    "subtitle": "Relevés restants, regroupés par zone",
+    "empty": "Aucun relevé restant, votre itinéraire est vide.",
+    "stops": "Arrêts",
+    "areas": "Zones",
+    "estimate": "Durée",
+    "hours": "{{hours}} h {{minutes}} min",
+    "minutes": "{{minutes}} min",
+    "stopCount": "{{count}} arrêt(s)",
+    "hint": "L'ordre suit l'urgence : relevés rejetés d'abord, puis par zone. Touchez un arrêt pour saisir le relevé."
+  },
+  "history": {
+    "title": "Historique du mois",
+    "empty": "Aucun relevé envoyé pour le moment."
+  },
+  "notifications": {
+    "unread": "{{count}} non lue(s)",
+    "allRead": "Tout est lu",
+    "markAll": "Tout marquer comme lu",
+    "empty": "Aucune notification."
+  },
+  "profile": {
+    "thisMonth": "Ce mois-ci",
+    "account": "Mon compte",
+    "meters": "Compteurs",
+    "preferences": "Préférences",
+    "notifications": "Notifications",
+    "notificationsDesc": "Nouvelle tournée, relevés rejetés, interventions",
+    "notificationsDescClient": "Factures, coupures, suivi des demandes",
+    "language": "Langue",
+    "languageDesc": "Français · English · العربية",
+    "support": "Aide",
+    "callSupport": "Assistance STE",
+    "callSupportBody": "Appelez le {{phone}} du lundi au vendredi.",
+    "about": "À propos",
+    "version": "Version {{version}}",
+    "chooseLanguage": "Choisir la langue",
+    "languageRestart": "Le sens de lecture change : l'application va redémarrer pour appliquer la langue."
   },
   "agent": {
     "tabReading": "Relevé",
@@ -49,7 +368,7 @@
     "greeting": "Bonjour",
     "searchLabel": "Code client",
     "searchPlaceholder": "CUST-001",
-    "searchHint": "Entrez un code client pour commencer.",
+    "searchHint": "Entrez un code client pour voir sa situation.",
     "round": "Ma tournée",
     "roundEmpty": "Aucun relevé ne vous est affecté pour le moment.",
     "roundTotal": "Affectés",
@@ -69,15 +388,15 @@
     "consumption": "Consommation",
     "photo": "Photo du compteur",
     "takePhoto": "Prendre une photo",
-    "retakePhoto": "Reprendre",
+    "retakePhoto": "Reprendre la photo",
     "removePhoto": "Supprimer",
-    "access": "Accès",
+    "access": "Accès au compteur",
     "accessed": "Accessible",
     "inaccessible": "Non accessible",
     "comment": "Commentaire",
     "commentPlaceholder": "Observation (optionnel)",
-    "submit": "Enregistrer",
-    "resubmit": "Renvoyer",
+    "submit": "Envoyer le relevé",
+    "resubmit": "Renvoyer le relevé",
     "reset": "Effacer",
     "sending": "Envoi…",
     "sent": "Relevé enregistré",
@@ -102,6 +421,13 @@
     "tabProfile": "Profil",
     "role": "Rôle"
   },
+  "clientHome": {
+    "greeting": "Bonjour, {{name}}",
+    "payNow": "Payer",
+    "viewBills": "Mes factures",
+    "quickActions": "Services",
+    "consumption": "Ma consommation"
+  },
   "client": {
     "tabBills": "Factures",
     "tabReadings": "Relevés",
@@ -122,15 +448,240 @@
     "tabComplaints": "Réclamations",
     "tabProfile": "Profil"
   },
+  "bills": {
+    "unpaidCount": "Factures impayées",
+    "remaining": "Reste à payer : {{amount}} {{currency}}",
+    "hint": "Touchez une facture pour voir le détail, la payer ou la contester.",
+    "notFound": "Facture introuvable.",
+    "amountDue": "Montant à payer",
+    "amountPaid": "Montant réglé",
+    "total": "Total facturé",
+    "paid": "Déjà payé",
+    "balance": "Reste à payer",
+    "actions": "Actions",
+    "download": "Télécharger",
+    "downloadMock": "Le téléchargement du PDF sera disponible avec la prochaine version.",
+    "dispute": "Contester",
+    "disputeSubject": "Contestation de la facture {{number}}",
+    "payHint": "Les paiements sont également acceptés dans toutes les agences STE."
+  },
+  "consumption": {
+    "last": "Dernière conso",
+    "average": "Moyenne",
+    "currentIndex": "Index actuel",
+    "lastReading": "Dernier relevé",
+    "chartTitle": "Évolution mensuelle",
+    "history": "Historique des relevés",
+    "hint": "Les relevés sont effectués chaque mois par un agent STE puis validés avant facturation."
+  },
+  "services": {
+    "subtitle": "Toutes vos démarches en quelques touches",
+    "groupRequests": "Demandes",
+    "groupAccount": "Mon compte",
+    "groupInfo": "Informations",
+    "openCount": "{{count}} en cours",
+    "reclamation": "Réclamation",
+    "reclamationDesc": "Signaler un problème de service ou de facturation",
+    "complaints": "Plaintes",
+    "complaintsDesc": "Suivre mes réclamations",
+    "installation": "Demande d'installation",
+    "installationDesc": "Nouveau branchement, extension ou transfert",
+    "requests": "Mes demandes",
+    "requestsDesc": "Suivre mes demandes d'installation",
+    "verification": "Vérification",
+    "verificationDesc": "Vérifier une référence : demande, reçu, facture",
+    "pay": "Payer une facture",
+    "payDesc": "Mobile money, carte ou agence",
+    "selfReading": "Auto-relevé",
+    "selfReadingDesc": "Envoyer l'index de mon compteur",
+    "billsDesc": "Historique et détail des factures",
+    "outages": "Coupures & travaux",
+    "outagesDesc": "Incidents et interventions sur le réseau",
+    "agencies": "Agences & contact",
+    "agenciesDesc": "Horaires, adresses et numéros utiles",
+    "notificationsDesc": "Alertes et messages de la STE"
+  },
+  "reclamation": {
+    "category": "Catégorie",
+    "priority": "Priorité",
+    "description": "Description",
+    "subjectPlaceholder": "Ex. Pas d'eau depuis deux jours",
+    "followHint": "Vous pourrez suivre l'avancement dans « Plaintes ».",
+    "sentBody": "Référence {{reference}}. Nos équipes reviennent vers vous rapidement."
+  },
+  "complaintsList": {
+    "subtitle": "{{count}} réclamation(s) en cours",
+    "new": "Nouvelle réclamation",
+    "open": "En cours",
+    "closed": "Clôturées",
+    "empty": "Aucune réclamation.",
+    "notFound": "Réclamation introuvable.",
+    "filedOn": "Déposée le",
+    "updatedOn": "Mise à jour le",
+    "progress": "Suivi",
+    "openNotice": "Vous serez notifié à chaque étape du traitement.",
+    "closedNotice": "Cette réclamation est close. Déposez-en une nouvelle si le problème persiste."
+  },
+  "complaintStatus": {
+    "Open": "Ouverte",
+    "In_Progress": "En cours",
+    "Resolved": "Résolue",
+    "Closed": "Clôturée"
+  },
+  "installation": {
+    "subtitle": "Demande de branchement en trois étapes",
+    "step": {
+      "kind": "Demande",
+      "address": "Adresse",
+      "review": "Récapitulatif"
+    },
+    "kindLabel": "Type de demande",
+    "kind": {
+      "new": "Nouveau branchement",
+      "extension": "Extension",
+      "transfer": "Transfert"
+    },
+    "usageLabel": "Usage",
+    "usage": {
+      "public": "Public / administration",
+      "private": "Privé / domestique",
+      "borne_fontaine": "Borne fontaine"
+    },
+    "kindHint": "Après vérification, un devis vous sera transmis avant l'installation.",
+    "contact": "Contact",
+    "fullName": "Nom complet",
+    "address": "Adresse d'installation",
+    "quarter": "Quartier",
+    "street": "Rue",
+    "door": "Porte",
+    "landmark": "Repère",
+    "landmarkPlaceholder": "Ex. face à la pharmacie",
+    "missingContact": "Renseignez votre nom et un numéro de téléphone valide.",
+    "missingAddress": "Renseignez au moins le quartier et la rue.",
+    "notes": "Précisions",
+    "notesPlaceholder": "Informations utiles pour le technicien (optionnel)",
+    "reviewHint": "Démo : la demande est enregistrée sur ce téléphone uniquement.",
+    "submit": "Envoyer la demande",
+    "sentTitle": "Demande envoyée",
+    "sentBody": "Référence {{reference}}. Suivez son avancement dans « Mes demandes »."
+  },
+  "requests": {
+    "subtitle": "{{count}} demande(s) en cours",
+    "new": "Nouvelle demande",
+    "empty": "Aucune demande d'installation.",
+    "notFound": "Demande introuvable.",
+    "amount": "Devis",
+    "progress": "Avancement",
+    "next": {
+      "OPEN": "Votre demande a été reçue et sera vérifiée par nos services.",
+      "VERIFICATION": "Un agent vérifie la faisabilité du branchement à votre adresse.",
+      "PAYMENT_PENDING": "Le devis est prêt : réglez-le en agence pour lancer l'installation.",
+      "PAYMENT_COLLECTED": "Paiement reçu, l'installation va être programmée.",
+      "PAYMENT_CANCELLED": "Le paiement a été annulé. Contactez votre agence.",
+      "INSTALLATION_PENDING": "Un technicien interviendra prochainement à votre adresse.",
+      "COMPLETED": "Installation terminée. Bienvenue chez STE !"
+    }
+  },
+  "requestStatus": {
+    "OPEN": "Reçue",
+    "VERIFICATION": "Vérification",
+    "PAYMENT_PENDING": "Devis à régler",
+    "PAYMENT_COLLECTED": "Payée",
+    "PAYMENT_CANCELLED": "Paiement annulé",
+    "INSTALLATION_PENDING": "Installation planifiée",
+    "COMPLETED": "Terminée"
+  },
+  "verification": {
+    "subtitle": "Vérifiez l'état d'une référence STE",
+    "reference": "Référence",
+    "hint": "Demande (DEM-…), réclamation (REC-…), reçu (PAY-…) ou numéro de facture",
+    "samples": "Essayer avec",
+    "notFound": "Aucun élément trouvé pour « {{reference}} ».",
+    "type": "Type",
+    "title": "Objet",
+    "status": "Statut",
+    "updated": "Mis à jour le",
+    "verified": "Référence vérifiée",
+    "paymentTitle": "Reçu de paiement",
+    "paymentOk": "Paiement enregistré",
+    "kind": {
+      "request": "Demande d'installation",
+      "complaint": "Réclamation",
+      "payment": "Reçu de paiement",
+      "bill": "Facture"
+    },
+    "footnote": "Les demandes, réclamations et reçus de démonstration sont stockés sur ce téléphone ; les factures proviennent de votre compte STE."
+  },
+  "pay": {
+    "title": "Payer une facture",
+    "subtitle": "Paiement simulé, sans débit réel",
+    "step": {
+      "bill": "Facture",
+      "method": "Moyen",
+      "confirm": "Confirmation"
+    },
+    "nothingDue": "Vous n'avez aucune facture à régler.",
+    "methodLabel": "Moyen de paiement",
+    "method": {
+      "airtel": "Airtel Money",
+      "airtelDesc": "Paiement depuis votre portefeuille Airtel",
+      "moov": "Moov Money",
+      "moovDesc": "Paiement depuis votre portefeuille Moov",
+      "card": "Carte bancaire",
+      "cardDesc": "Visa ou Mastercard",
+      "agency": "En agence",
+      "agencyDesc": "Générer un avis de paiement à présenter au guichet"
+    },
+    "phoneLabel": "Numéro mobile money",
+    "phoneHint": "Vous recevrez une demande de confirmation sur ce numéro.",
+    "bill": "Facture",
+    "confirm": "Confirmer {{amount}} {{currency}}",
+    "mockNotice": "Démo : aucun paiement réel n'est effectué, un reçu de démonstration sera généré.",
+    "successTitle": "Paiement confirmé",
+    "successBody": "Conservez la référence ci-dessous, elle vous sera demandée en cas de réclamation.",
+    "afterNotice": "Le statut de la facture sera mis à jour lorsque le paiement en ligne sera connecté à la STE.",
+    "footnote": "Les frais éventuels de l'opérateur mobile money restent à votre charge."
+  },
+  "selfReading": {
+    "subtitle": "Envoyez l'index de votre compteur",
+    "lastIndex": "Dernier index validé",
+    "newIndex": "Nouvel index",
+    "lowerIndex": "L'index saisi est inférieur au dernier index validé ({{previous}}).",
+    "submit": "Envoyer mon relevé",
+    "disclaimer": "Votre auto-relevé aide la STE à suivre votre consommation ; le relevé officiel reste effectué par l'agent.",
+    "sentTitle": "Relevé envoyé",
+    "sentBody": "Référence {{reference}}. Merci de votre contribution.",
+    "previous": "Mes derniers auto-relevés"
+  },
+  "outages": {
+    "subtitle": "Incidents et travaux sur le réseau",
+    "empty": "Aucun incident signalé.",
+    "until": "jusqu'au {{time}}",
+    "status": {
+      "ongoing": "En cours",
+      "planned": "Programmée",
+      "resolved": "Résolue"
+    }
+  },
+  "agencies": {
+    "subtitle": "Nous sommes à votre écoute",
+    "contact": "Contact",
+    "hotline": "Service clientèle",
+    "hotlineHours": "Lun–Ven 7h30–15h30",
+    "whatsapp": "WhatsApp",
+    "email": "Email",
+    "list": "Nos agences"
+  },
   "bill": {
     "PAID": "Payée",
     "UNPAID": "Impayée",
     "PARTIAL": "Partielle",
-    "OVERDUE": "En retard"
+    "OVERDUE": "En retard",
+    "PENDING": "À payer"
   },
   "status": {
-    "PENDING": "En attente",
-    "SUBMITTED": "Soumis",
+    "PENDING": "À relever",
+    "SUBMITTED": "Envoyé",
     "APPROVED": "Validé",
     "REJECTED": "Rejeté",
     "RE_SUBMITED": "Renvoyé"
@@ -143,13 +694,13 @@
     "missingFields": "Renseignez l'objet et la description.",
     "type_Technical": "Technique",
     "type_Billing": "Facturation",
+    "type_Service": "Service",
     "type_Other": "Autre",
     "priority_Low": "Basse",
     "priority_Medium": "Moyenne",
     "priority_High": "Haute",
-    "subtitle": "Signalez un problème à la STE",
-    "type_Service": "Service",
     "priority_Critical": "Critique",
+    "subtitle": "Signalez un problème à la STE",
     "unavailable": "L'enregistrement des réclamations est momentanément indisponible. Réessayez plus tard."
   }
 }

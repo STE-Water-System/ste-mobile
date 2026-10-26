@@ -1,123 +1,72 @@
 import React, { useState } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
-import { useMutation } from '@tanstack/react-query';
+import { ScrollView, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
-import { Button, Card, Field, Header, Notice, Screen, Segmented } from '../../components/ui';
-import {
-  complaintsApi,
-  type ComplaintCategory,
-  type ComplaintPriority,
-} from '../../services/api';
+import { Badge, Button, Card, Chip, Divider, Empty, Header, MockBanner, Screen } from '../../components/ui';
+import { ListRow } from '../../components/blocks';
+import { Appear } from '../../components/motion';
+import { useComplaintRecords } from '../../hooks/useClientRecords';
+import { complaintTone, formatDateShort } from '../../lib/format';
 import { spacing } from '../../theme';
-import { useCustomer } from '../../store/authStore';
 
+type Filter = 'all' | 'open' | 'closed';
+
+/** MOCK list — "plaintes": every complaint the customer filed, with its progress. */
 const ComplaintsScreen = () => {
-  const { t } = useTranslation();
-  const customer = useCustomer();
+  const { t, i18n } = useTranslation();
+  const router = useRouter();
+  const records = useComplaintRecords();
+  const [filter, setFilter] = useState<Filter>('all');
 
-  const [category, setCategory] = useState<ComplaintCategory>('Technical');
-  const [priority, setPriority] = useState<ComplaintPriority>('Medium');
-  const [subject, setSubject] = useState('');
-  const [description, setDescription] = useState('');
-  const [error, setError] = useState<string | null>(null);
-
-  const create = useMutation({
-    mutationFn: () =>
-      complaintsApi.create({
-        customerId: customer!.customerId,
-        subject: subject.trim(),
-        description: description.trim(),
-        category,
-        priority,
-      }),
-    onSuccess: () => {
-      setSubject('');
-      setDescription('');
-      Alert.alert('', t('complaints.sent'));
-    },
-    onError: (err: any) => {
-      // The route forces an invalid `status` on insert, so every submission is
-      // rejected until that is corrected server-side. Raw SQL text would mean
-      // nothing to a customer.
-      const message = String(err?.message || '');
-      setError(
-        /truncated|status/i.test(message) ? t('complaints.unavailable') : message || t('auth.failed')
-      );
-    },
-  });
-
-  const submit = () => {
-    setError(null);
-    // description is optional to the validator but NOT NULL in the model.
-    if (!subject.trim() || !description.trim()) {
-      setError(t('complaints.missingFields'));
-      return;
-    }
-    create.mutate();
-  };
+  const isOpen = (status: string) => status === 'Open' || status === 'In_Progress';
+  const visible = records.filter((row) => (filter === 'all' ? true : filter === 'open' ? isOpen(row.status) : !isOpen(row.status)));
+  const openCount = records.filter((row) => isOpen(row.status)).length;
 
   return (
     <Screen scroll>
-      <Header title={t('client.tabComplaints')} subtitle={t('complaints.subtitle')} />
+      <Header title={t('services.complaints')} subtitle={t('complaintsList.subtitle', { count: openCount })} onBack={() => router.back()} />
+      <MockBanner label={t('mock.banner')} />
 
-      <Card>
-        <View style={styles.group}>
-          <Segmented<ComplaintCategory>
-            value={category}
-            onChange={setCategory}
-            options={[
-              { value: 'Technical', label: t('complaints.type_Technical') },
-              { value: 'Billing', label: t('complaints.type_Billing') },
-              { value: 'Service', label: t('complaints.type_Service') },
-              { value: 'Other', label: t('complaints.type_Other') },
-            ]}
-          />
-        </View>
+      <Appear>
+        <Button label={t('complaintsList.new')} icon="add-circle-outline" variant="secondary" onPress={() => router.push('/(client)/reclamation')} />
+      </Appear>
 
-        <View style={styles.group}>
-          <Segmented<ComplaintPriority>
-            value={priority}
-            onChange={setPriority}
-            options={[
-              { value: 'Low', label: t('complaints.priority_Low') },
-              { value: 'Medium', label: t('complaints.priority_Medium') },
-              { value: 'High', label: t('complaints.priority_High') },
-              { value: 'Critical', label: t('complaints.priority_Critical') },
-            ]}
-          />
-        </View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+        <Chip label={t('round.filter.all')} count={records.length} active={filter === 'all'} onPress={() => setFilter('all')} />
+        <Chip label={t('complaintsList.open')} count={openCount} active={filter === 'open'} onPress={() => setFilter('open')} />
+        <Chip label={t('complaintsList.closed')} count={records.length - openCount} active={filter === 'closed'} onPress={() => setFilter('closed')} />
+      </ScrollView>
 
-        <Field
-          label={t('complaints.subject')}
-          value={subject}
-          onChangeText={setSubject}
-          maxLength={255}
-        />
-        <Field
-          value={description}
-          onChangeText={setDescription}
-          placeholder={t('complaints.descriptionPlaceholder')}
-          multiline
-        />
-      </Card>
-
-      {!!error && <Notice text={error} tone="danger" />}
-
-      <Button
-        label={t('complaints.submit')}
-        onPress={submit}
-        loading={create.isPending}
-        disabled={!customer}
-        style={styles.submit}
-      />
+      {visible.length === 0 ? (
+        <Empty icon="chatbubbles-outline" text={t('complaintsList.empty')} />
+      ) : (
+        <Card padded={false} style={styles.list}>
+          {visible.map((row, index) => (
+            <Appear key={row.id} index={index}>
+              {index > 0 && <Divider inset />}
+              <ListRow
+                icon="chatbubble-ellipses-outline"
+                iconTone={complaintTone(row.status)}
+                title={row.subjectKey ? t(row.subjectKey) : row.subject}
+                subtitle={`${row.reference} · ${t(`complaints.type_${row.category}`, row.category)}`}
+                meta={formatDateShort(row.updatedAt, i18n.language)}
+                trailing={<Badge label={t(`complaintStatus.${row.status}`)} tone={complaintTone(row.status)} size="sm" />}
+                onPress={() => router.push({ pathname: '/(client)/complaint/[id]', params: { id: row.id } })}
+                style={styles.row}
+              />
+            </Appear>
+          ))}
+        </Card>
+      )}
     </Screen>
   );
 };
 
 const styles = StyleSheet.create({
-  group: { marginBottom: spacing(3) },
-  submit: { marginTop: spacing(5) },
+  chips: { gap: spacing(2), paddingVertical: spacing(4) },
+  list: { paddingHorizontal: spacing(4) },
+  row: { paddingVertical: spacing(3.5) },
 });
 
 export default ComplaintsScreen;
